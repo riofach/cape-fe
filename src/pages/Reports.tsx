@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -41,29 +40,29 @@ import {
 
 // Mock monthly expense data
 const monthlyData = [
-  { month: 'Jan', amount: 1200, budget: 1500 },
-  { month: 'Feb', amount: 980, budget: 1500 },
-  { month: 'Mar', amount: 1600, budget: 1500 },
-  { month: 'Apr', amount: 1458, budget: 1500 },
-  { month: 'May', amount: 1100, budget: 1500 },
-  { month: 'Jun', amount: 1250, budget: 1500 },
-  { month: 'Jul', amount: 1420, budget: 1500 },
-  { month: 'Aug', amount: 1350, budget: 1500 },
-  { month: 'Sep', amount: 1190, budget: 1500 },
-  { month: 'Oct', amount: 1550, budget: 1500 },
-  { month: 'Nov', amount: 1670, budget: 1500 },
-  { month: 'Dec', amount: 1950, budget: 1500 },
+  { month: 'Jan', amount: 18_000_000, budget: 22_500_000 },
+  { month: 'Feb', amount: 14_700_000, budget: 22_500_000 },
+  { month: 'Mar', amount: 16_000_000, budget: 22_500_000 },
+  { month: 'Apr', amount: 14_580_000, budget: 22_500_000 },
+  { month: 'May', amount: 11_000_000, budget: 22_500_000 },
+  { month: 'Jun', amount: 12_500_000, budget: 22_500_000 },
+  { month: 'Jul', amount: 14_200_000, budget: 22_500_000 },
+  { month: 'Aug', amount: 13_500_000, budget: 22_500_000 },
+  { month: 'Sep', amount: 11_900_000, budget: 22_500_000 },
+  { month: 'Oct', amount: 15_500_000, budget: 22_500_000 },
+  { month: 'Nov', amount: 16_700_000, budget: 22_500_000 },
+  { month: 'Dec', amount: 19_500_000, budget: 22_500_000 },
 ];
 
 // Category data
 const categoryData = [
-  { name: 'Food', value: 4200, color: '#0088FE' },
-  { name: 'Housing', value: 8400, color: '#00C49F' },
-  { name: 'Transportation', value: 2900, color: '#FFBB28' },
-  { name: 'Entertainment', value: 1800, color: '#FF8042' },
-  { name: 'Utilities', value: 2200, color: '#8884d8' },
-  { name: 'Healthcare', value: 1100, color: '#82ca9d' },
-  { name: 'Others', value: 1400, color: '#ffc658' },
+  { name: 'Makanan', value: 63_000_000, color: '#0088FE' },
+  { name: 'Perumahan', value: 126_000_000, color: '#00C49F' },
+  { name: 'Transportasi', value: 29_000_000, color: '#FFBB28' },
+  { name: 'Entertainment', value: 18_000_000, color: '#FF8042' },
+  { name: 'Pengeluaran Listrik', value: 22_000_000, color: '#8884d8' },
+  { name: 'Kesehatan', value: 11_000_000, color: '#82ca9d' },
+  { name: 'Lainnya', value: 14_000_000, color: '#ffc658' },
 ];
 
 // Trend data for last 12 months
@@ -86,18 +85,18 @@ const reportYears = ['2025', '2024', '2023'];
 
 // Available months for reports
 const reportMonths = [
-  { label: 'January', value: '01' },
-  { label: 'February', value: '02' },
-  { label: 'March', value: '03' },
+  { label: 'Januari', value: '01' },
+  { label: 'Februari', value: '02' },
+  { label: 'Maret', value: '03' },
   { label: 'April', value: '04' },
-  { label: 'May', value: '05' },
-  { label: 'June', value: '06' },
-  { label: 'July', value: '07' },
-  { label: 'August', value: '08' },
+  { label: 'Mei', value: '05' },
+  { label: 'Juni', value: '06' },
+  { label: 'Juli', value: '07' },
+  { label: 'Agustus', value: '08' },
   { label: 'September', value: '09' },
-  { label: 'October', value: '10' },
+  { label: 'Oktober', value: '10' },
   { label: 'November', value: '11' },
-  { label: 'December', value: '12' },
+  { label: 'Desember', value: '12' },
 ];
 
 const Reports = () => {
@@ -105,9 +104,9 @@ const Reports = () => {
   const [selectedMonth, setSelectedMonth] = useState('04'); // April
   const [selectedTab, setSelectedTab] = useState('overview');
 
-  // Format currency
+  // Format currency to Rupiah
   const formatCurrency = (value: number) => {
-    return `$${value.toFixed(2)}`;
+    return `Rp ${value.toLocaleString('id-ID')}`;
   };
 
   return (
@@ -115,8 +114,8 @@ const Reports = () => {
       {/* Page Title and Export Buttons */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Reports</h1>
-          <p className="text-gray-600">Analyze and understand your spending patterns</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Laporan</h1>
+          <p className="text-gray-600">Analisis dan pahami pola pengeluaran Anda</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button variant="outline" className="flex items-center">
@@ -135,13 +134,13 @@ const Reports = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="w-full sm:w-1/3">
-              <Label htmlFor="report-year" className="mb-2 block">Year</Label>
+              <Label htmlFor="report-year" className="mb-2 block">Tahun</Label>
               <Select
                 value={selectedYear}
                 onValueChange={setSelectedYear}
               >
                 <SelectTrigger id="report-year">
-                  <SelectValue placeholder="Select Year" />
+                  <SelectValue placeholder="Pilih Tahun" />
                 </SelectTrigger>
                 <SelectContent>
                   {reportYears.map((year) => (
@@ -153,13 +152,13 @@ const Reports = () => {
               </Select>
             </div>
             <div className="w-full sm:w-1/3">
-              <Label htmlFor="report-month" className="mb-2 block">Month</Label>
+              <Label htmlFor="report-month" className="mb-2 block">Bulan</Label>
               <Select
                 value={selectedMonth}
                 onValueChange={setSelectedMonth}
               >
                 <SelectTrigger id="report-month">
-                  <SelectValue placeholder="Select Month" />
+                  <SelectValue placeholder="Pilih Bulan" />
                 </SelectTrigger>
                 <SelectContent>
                   {reportMonths.map((month) => (
@@ -171,7 +170,7 @@ const Reports = () => {
               </Select>
             </div>
             <Button className="w-full sm:w-auto bg-primary-gradient hover:opacity-90">
-              Generate Report
+              Generate Laporan
             </Button>
           </div>
         </CardContent>
@@ -185,10 +184,10 @@ const Reports = () => {
         onValueChange={setSelectedTab}
       >
         <TabsList className="grid grid-cols-3 md:grid-cols-5 w-full mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="daily">Daily Spending</TabsTrigger>
+          <TabsTrigger value="overview">Laporan Umum</TabsTrigger>
+          <TabsTrigger value="categories">Kategori</TabsTrigger>
+          <TabsTrigger value="trends">Tren</TabsTrigger>
+          <TabsTrigger value="daily">Pengeluaran Harian</TabsTrigger>
           <TabsTrigger value="insights">Insights</TabsTrigger>
         </TabsList>
         
@@ -197,33 +196,39 @@ const Reports = () => {
           {/* Monthly Overview Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Overview</CardTitle>
+              <CardTitle>Laporan Umum</CardTitle>
               <CardDescription>
-                Your spending patterns for {reportMonths.find(m => m.value === selectedMonth)?.label} {selectedYear}
+                Pola pengeluaran Anda untuk bulan {reportMonths.find(m => m.value === selectedMonth)?.label} {selectedYear}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-500">Total Expenses</p>
-                  <p className="text-3xl font-bold text-gray-900">$1,458.65</p>
+                  <p className="text-sm text-gray-500">Total Pengeluaran</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {formatCurrency(21_879_750)}
+                  </p>
                   <div className="flex items-center text-green-600 text-sm">
                     <TrendingUp className="mr-1 h-4 w-4" />
-                    <span>3.2% from last month</span>
+                    <span>3.2% dari bulan lalu</span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-500">Monthly Budget</p>
-                  <p className="text-3xl font-bold text-gray-900">$1,500.00</p>
+                  <p className="text-sm text-gray-500">Anggaran Bulanan</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {formatCurrency(22_500_000)}
+                  </p>
                   <div className="flex items-center text-green-600 text-sm">
-                    <span>$41.35 under budget</span>
+                    <span>Rp 413.50 dibawah anggaran</span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-500">Average Daily Spend</p>
-                  <p className="text-3xl font-bold text-gray-900">$47.05</p>
+                  <p className="text-sm text-gray-500">Rata-rata Pengeluaran Harian</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {formatCurrency(47_05)}
+                  </p>
                   <div className="text-sm text-gray-500">
-                    <span>31 days in this month</span>
+                    <span>31 hari dalam bulan ini</span>
                   </div>
                 </div>
               </div>
@@ -235,7 +240,7 @@ const Reports = () => {
             <CardHeader>
               <CardTitle>Expenses vs. Budget</CardTitle>
               <CardDescription>
-                Comparing your monthly spending with your budget
+                Membandingkan pengeluaran bulanan Anda dengan anggaran Anda
               </CardDescription>
             </CardHeader>
             <CardContent className="h-80">
@@ -246,19 +251,19 @@ const Reports = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `$${value}`} />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                  <YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+                  <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   <Legend />
                   <Bar 
                     dataKey="amount" 
-                    name="Actual Spending" 
+                    name="Pengeluaran Aktual" 
                     fill="url(#barGradient)" 
                     radius={[4, 4, 0, 0]}
                     barSize={20}
                   />
                   <Bar 
                     dataKey="budget" 
-                    name="Budget" 
+                    name="Anggaran" 
                     fill="#8884d8" 
                     radius={[4, 4, 0, 0]}
                     barSize={20}
@@ -279,8 +284,8 @@ const Reports = () => {
             {/* Category Breakdown */}
             <Card>
               <CardHeader>
-                <CardTitle>Category Breakdown</CardTitle>
-                <CardDescription>How your expenses are distributed</CardDescription>
+                <CardTitle>Breakdown Kategori</CardTitle>
+                <CardDescription>Bagaimana pengeluaran Anda terbagi</CardDescription>
               </CardHeader>
               <CardContent className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -300,7 +305,7 @@ const Reports = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                    <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   </RePieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -309,8 +314,8 @@ const Reports = () => {
             {/* Top Expenses */}
             <Card>
               <CardHeader>
-                <CardTitle>Top Spending Categories</CardTitle>
-                <CardDescription>Your highest expense categories</CardDescription>
+                <CardTitle>Kategori Pengeluaran Teratas</CardTitle>
+                <CardDescription>Kategori pengeluaran terbesar Anda</CardDescription>
               </CardHeader>
               <CardContent>
                 {topSpendingData.map((category, index) => (
@@ -326,9 +331,9 @@ const Reports = () => {
                       <span className="font-medium">{category.name}</span>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">${category.value.toFixed(2)}</p>
+                      <p className="font-semibold">{formatCurrency(category.value)}</p>
                       <p className="text-xs text-gray-500">
-                        {(category.value / categoryData.reduce((sum, cat) => sum + cat.value, 0) * 100).toFixed(1)}% of total
+                        {(category.value / categoryData.reduce((sum, cat) => sum + cat.value, 0) * 100).toFixed(1)}% dari total
                       </p>
                     </div>
                   </div>
@@ -342,9 +347,9 @@ const Reports = () => {
         <TabsContent value="categories" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Category Analysis</CardTitle>
+              <CardTitle>Analisis Kategori</CardTitle>
               <CardDescription>
-                Detailed breakdown of your spending by category
+                Analisis detail pengeluaran Anda berdasarkan kategori
               </CardDescription>
             </CardHeader>
             <CardContent className="h-96">
@@ -355,12 +360,12 @@ const Reports = () => {
                   margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                  <XAxis type="number" tickFormatter={(value) => `$${value}`} />
+                  <XAxis type="number" tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
                   <YAxis type="category" dataKey="name" width={100} />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                  <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   <Bar 
                     dataKey="value" 
-                    name="Amount" 
+                    name="Jumlah" 
                     fill="url(#barGradient)" 
                     radius={[0, 4, 4, 0]}
                     barSize={20}
@@ -373,8 +378,8 @@ const Reports = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Category Distribution</CardTitle>
-                <CardDescription>Percentage breakdown of your expenses</CardDescription>
+                <CardTitle>Distribusi Kategori</CardTitle>
+                <CardDescription>Perbandingan persentase pengeluaran Anda</CardDescription>
               </CardHeader>
               <CardContent className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -393,7 +398,7 @@ const Reports = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                    <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   </RePieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -401,8 +406,8 @@ const Reports = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Category Totals</CardTitle>
-                <CardDescription>Detailed amounts by category</CardDescription>
+                <CardTitle>Total Pengeluaran Kategori</CardTitle>
+                <CardDescription>Uang yang dikeluarkan berdasarkan kategori</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -416,7 +421,7 @@ const Reports = () => {
                           />
                           <span className="font-medium">{category.name}</span>
                         </div>
-                        <span className="font-semibold">${category.value.toFixed(2)}</span>
+                        <span className="font-semibold">{formatCurrency(category.value)}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div 
@@ -439,9 +444,9 @@ const Reports = () => {
         <TabsContent value="trends" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Spending Trends</CardTitle>
+              <CardTitle>Pola Pengeluaran</CardTitle>
               <CardDescription>
-                Your monthly spending patterns over the last 12 months
+                Pola pengeluaran Anda bulanan selama 12 bulan terakhir
               </CardDescription>
             </CardHeader>
             <CardContent className="h-80">
@@ -452,13 +457,13 @@ const Reports = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `$${value}`} />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                  <YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+                  <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   <Legend />
                   <Line 
                     type="monotone" 
                     dataKey="amount" 
-                    name="Monthly Expenses" 
+                    name="Pengeluaran Bulanan" 
                     stroke="#2E7D32" 
                     strokeWidth={3}
                     dot={{ stroke: '#2E7D32', strokeWidth: 2, r: 4 }}
@@ -471,9 +476,9 @@ const Reports = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Expense Patterns</CardTitle>
+              <CardTitle>Pola Pengeluaran</CardTitle>
               <CardDescription>
-                Visualizing your spending as an area chart
+                Visualisasi pengeluaran Anda sebagai grafik area
               </CardDescription>
             </CardHeader>
             <CardContent className="h-80">
@@ -484,12 +489,12 @@ const Reports = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `$${value}`} />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                  <YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+                  <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   <Area 
                     type="monotone" 
                     dataKey="amount" 
-                    name="Monthly Expenses" 
+                    name="Pengeluaran Bulanan" 
                     stroke="#2E7D32"
                     fill="url(#areaGradient)"
                   />
@@ -509,9 +514,9 @@ const Reports = () => {
         <TabsContent value="daily" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Daily Spending</CardTitle>
+              <CardTitle>Pengeluaran Harian</CardTitle>
               <CardDescription>
-                Your day-by-day expenses for {reportMonths.find(m => m.value === selectedMonth)?.label} {selectedYear}
+                Pengeluaran harian Anda untuk bulan {reportMonths.find(m => m.value === selectedMonth)?.label} {selectedYear}
               </CardDescription>
             </CardHeader>
             <CardContent className="h-96">
@@ -523,13 +528,13 @@ const Reports = () => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis 
                     dataKey="day" 
-                    label={{ value: 'Day of Month', position: 'insideBottom', offset: -5 }}
+                    label={{ value: 'Hari Bulan', position: 'insideBottom', offset: -5 }}
                   />
-                  <YAxis tickFormatter={(value) => `$${value}`} />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                  <YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+                  <Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']}/>
                   <Bar 
                     dataKey="amount" 
-                    name="Daily Spend" 
+                    name="Pengeluaran Harian" 
                     fill="url(#barGradient)" 
                     radius={[4, 4, 0, 0]}
                     barSize={8}
@@ -543,19 +548,19 @@ const Reports = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-gray-500">
-                  Highest Spending Day
+                  Hari Pengeluaran Tertinggi
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col">
                   <span className="text-2xl font-bold text-gray-900">
-                    April 20
+                    20 April
                   </span>
                   <span className="text-3xl font-bold text-primary">
-                    $149.99
+                    {formatCurrency(149_99)}
                   </span>
                   <p className="text-sm text-gray-500 mt-1">
-                    Main expense: Online course subscription
+                    Pengeluaran utama: Paket kursus online
                   </p>
                 </div>
               </CardContent>
@@ -564,19 +569,19 @@ const Reports = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-gray-500">
-                  Lowest Spending Day
+                  Hari Pengeluaran Terendah
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col">
                   <span className="text-2xl font-bold text-gray-900">
-                    April 3
+                    3 April
                   </span>
                   <span className="text-3xl font-bold text-green-600">
-                    $12.50
+                    {formatCurrency(12_50)}
                   </span>
                   <p className="text-sm text-gray-500 mt-1">
-                    Main expense: Coffee and snack
+                    Pengeluaran utama: Kopi dan makanan
                   </p>
                 </div>
               </CardContent>
@@ -585,18 +590,18 @@ const Reports = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-gray-500">
-                  No-Spend Days
+                  Hari Tanpa Pengeluaran
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col">
                   <span className="text-3xl font-bold text-gray-900">4</span>
                   <p className="text-sm text-gray-500 mt-1">
-                    Days with zero expenses
+                    Hari dengan pengeluaran nol
                   </p>
                   <div className="flex items-center text-green-600 text-sm mt-2">
                     <TrendingUp className="mr-1 h-4 w-4" />
-                    <span>2 more than last month</span>
+                    <span>2 lebih dari bulan lalu</span>
                   </div>
                 </div>
               </CardContent>
@@ -609,9 +614,9 @@ const Reports = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Savings Opportunities</CardTitle>
+                <CardTitle>Opportunitas Penyimpanan</CardTitle>
                 <CardDescription>
-                  Areas where you could potentially save money
+                  Area di mana Anda mungkin bisa menyimpan uang lebih banyak
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -623,10 +628,10 @@ const Reports = () => {
                       </div>
                       <div>
                         <h4 className="font-medium text-gray-900">
-                          Food expenses are above average
+                          Pengeluaran makanan lebih tinggi dari rata-rata
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">
-                          Your food spending is 23% higher than your 6-month average. Consider meal planning to reduce costs.
+                          Pengeluaran makanan Anda 23% lebih tinggi dari rata-rata 6 bulan terakhir. Cobalah planing makanan untuk mengurangi biaya.
                         </p>
                       </div>
                     </div>
@@ -639,10 +644,10 @@ const Reports = () => {
                       </div>
                       <div>
                         <h4 className="font-medium text-gray-900">
-                          Transportation costs are down
+                          Pengeluaran transportasi turun
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">
-                          Your transportation expenses decreased by 15% compared to last month. Keep up the good work!
+                          Pengeluaran transportasi Anda turun 15% dibandingkan bulan lalu. Tetapkan hal-hal ini!
                         </p>
                       </div>
                     </div>
@@ -655,10 +660,10 @@ const Reports = () => {
                       </div>
                       <div>
                         <h4 className="font-medium text-gray-900">
-                          Entertainment spending is high
+                          Pengeluaran hiburan tinggi
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">
-                          Entertainment expenses are 35% over your budget. Look for free or lower-cost alternatives.
+                          Pengeluaran hiburan Anda 35% di atas anggaran Anda. Cari alternatif yang lebih murah atau gratis.
                         </p>
                       </div>
                     </div>
@@ -669,17 +674,17 @@ const Reports = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Monthly Comparison</CardTitle>
+                <CardTitle>Perbandingan Bulanan</CardTitle>
                 <CardDescription>
-                  How this month compares to previous periods
+                  Bagaimana bulan ini berbandingkan dengan periode sebelumnya
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">vs. Last Month</span>
-                      <span className="text-sm font-medium text-red-600">+$78.45 (5.7%)</span>
+                      <span className="text-sm font-medium">vs. Bulan Lalu</span>
+                      <span className="text-sm font-medium text-red-600">Rp 78.45 (+5.7%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div className="h-2.5 rounded-full bg-red-500" style={{ width: '57%' }}></div>
@@ -688,8 +693,8 @@ const Reports = () => {
 
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">vs. 3 Month Average</span>
-                      <span className="text-sm font-medium text-green-600">-$42.20 (2.8%)</span>
+                      <span className="text-sm font-medium">vs. Rata-rata 3 Bulan</span>
+                      <span className="text-sm font-medium text-green-600">Rp 42.20 (-2.8%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div className="h-2.5 rounded-full bg-green-500" style={{ width: '28%' }}></div>
@@ -698,8 +703,8 @@ const Reports = () => {
 
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">vs. 6 Month Average</span>
-                      <span className="text-sm font-medium text-red-600">+$103.55 (7.6%)</span>
+                      <span className="text-sm font-medium">vs. Rata-rata 6 Bulan</span>
+                      <span className="text-sm font-medium text-red-600">Rp 103.55 (+7.6%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div className="h-2.5 rounded-full bg-red-500" style={{ width: '76%' }}></div>
@@ -708,8 +713,8 @@ const Reports = () => {
 
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">vs. Same Month Last Year</span>
-                      <span className="text-sm font-medium text-red-600">+$215.30 (17.3%)</span>
+                      <span className="text-sm font-medium">vs. Bulan Sama Tahun Lalu</span>
+                      <span className="text-sm font-medium text-red-600">Rp 215.30 (+17.3%)</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div className="h-2.5 rounded-full bg-red-500" style={{ width: '100%' }}></div>
@@ -722,9 +727,9 @@ const Reports = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Personalized Recommendations</CardTitle>
+              <CardTitle>Rekomendasi Pribadi</CardTitle>
               <CardDescription>
-                Tips to improve your financial health based on your spending patterns
+                Tips untuk meningkatkan kesehatan finansial Anda berdasarkan pola pengeluaran Anda
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -734,9 +739,9 @@ const Reports = () => {
                     <span className="font-bold">1</span>
                   </div>
                   <div>
-                    <h4 className="text-lg font-medium text-gray-900">Create a food budget</h4>
+                    <h4 className="text-lg font-medium text-gray-900">Buat anggaran makanan</h4>
                     <p className="text-gray-600 mt-1">
-                      Set a weekly food budget and plan your meals in advance. This could help you save approximately $80-$120 per month based on your current spending patterns.
+                      Buat anggaran mingguan makanan dan jadwalkan makanan Anda sebelumnya. Ini bisa membantu Anda menyimpan sekitar Rp 80-120 per bulan berdasarkan pola pengeluaran Anda saat ini.
                     </p>
                   </div>
                 </div>
@@ -746,9 +751,9 @@ const Reports = () => {
                     <span className="font-bold">2</span>
                   </div>
                   <div>
-                    <h4 className="text-lg font-medium text-gray-900">Review subscription services</h4>
+                    <h4 className="text-lg font-medium text-gray-900">Periksa layanan pendaftaran</h4>
                     <p className="text-gray-600 mt-1">
-                      You're spending $45 monthly on potentially unused subscriptions. Consider reviewing and canceling services you don't regularly use.
+                      Anda mengeluarkan Rp 45 bulanan pada layanan pendaftaran yang mungkin tidak sering digunakan. Cobalah memeriksa dan membatalkan layanan yang tidak sering digunakan.
                     </p>
                   </div>
                 </div>
@@ -758,9 +763,9 @@ const Reports = () => {
                     <span className="font-bold">3</span>
                   </div>
                   <div>
-                    <h4 className="text-lg font-medium text-gray-900">Implement a 24-hour rule</h4>
+                    <h4 className="text-lg font-medium text-gray-900">Implementasikan aturan 24 jam</h4>
                     <p className="text-gray-600 mt-1">
-                      For non-essential purchases over $50, wait 24 hours before buying. This simple rule could reduce impulse purchases that we've identified in your spending patterns.
+                      Untuk pembelian non-essential yang lebih dari Rp 50, tunggu 24 jam sebelum membeli. Aturan ini bisa membantu mengurangi pembelian impulsive yang kita temukan dalam pola pengeluaran Anda.
                     </p>
                   </div>
                 </div>

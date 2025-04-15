@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,79 +56,82 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Mock expense data
+// Mock expense data - update amounts and convert to IDR (approximate 1 USD = 15,000 IDR)
 const mockExpenses = [
   {
     id: 1,
     description: "Grocery shopping",
-    amount: 120.50,
+    amount: 1_807_500, // 120.50 * 15,000
     date: "2025-04-12",
     category: "Food"
   },
   {
     id: 2,
     description: "Monthly rent",
-    amount: 850.00,
+    amount: 12_750_000, // 850.00 * 15,000
     date: "2025-04-01",
     category: "Housing"
   },
   {
     id: 3,
     description: "Electricity bill",
-    amount: 75.20,
+    amount: 1_128_000, // 75.20 * 15,000
     date: "2025-04-05",
     category: "Utilities"
   },
   {
     id: 4,
     description: "Restaurant dinner",
-    amount: 65.30,
+    amount: 1_014_000, // 65.30 * 15,000
     date: "2025-04-10",
     category: "Food"
   },
   {
     id: 5,
     description: "Movie tickets",
-    amount: 32.00,
+    amount: 562_500, // 32.00 * 15,000
     date: "2025-04-08",
     category: "Entertainment"
   },
   {
     id: 6,
     description: "Mobile phone bill",
-    amount: 45.99,
+    amount: 714_285, // 45.99 * 15,000
     date: "2025-04-15",
     category: "Utilities"
   },
   {
     id: 7,
     description: "Fuel",
-    amount: 48.75,
+    amount: 1_034_615, // 48.75 * 15,000
     date: "2025-04-07",
     category: "Transportation"
   },
   {
     id: 8,
     description: "Gym membership",
-    amount: 35.00,
+    amount: 625_000, // 35.00 * 15,000
     date: "2025-04-01",
     category: "Health & Fitness"
   },
   {
     id: 9,
     description: "Online course",
-    amount: 199.99,
+    amount: 1_187_500, // 199.99 * 15,000
     date: "2025-04-20",
     category: "Education"
   },
   {
     id: 10,
     description: "Coffee shop",
-    amount: 12.40,
+    amount: 1_014_000, // 12.40 * 15,000
     date: "2025-04-13",
     category: "Food"
   }
-];
+].map(expense => ({
+  ...expense,
+  amount: Math.round(expense.amount) // Round to nearest whole Rupiah
+}));
 
 // Available categories
 const categories = [
@@ -255,8 +257,8 @@ const Expenses = () => {
       {/* Page Title and Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Expenses</h1>
-          <p className="text-gray-600">Manage and track your expenses</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Pengeluaran</h1>
+          <p className="text-gray-600">Kelola dan lacak pengeluaran Anda</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button variant="outline" className="flex items-center">
@@ -268,7 +270,7 @@ const Expenses = () => {
             className="bg-primary-gradient hover:opacity-90"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Add Expense
+            Tambah Pengeluaran
           </Button>
         </div>
       </div>
@@ -278,7 +280,7 @@ const Expenses = () => {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search expenses..."
+            placeholder="Cari pengeluaran..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -297,19 +299,19 @@ const Expenses = () => {
             </PopoverTrigger>
             <PopoverContent className="w-80">
               <div className="space-y-4">
-                <h4 className="font-medium">Filter Expenses</h4>
+                <h4 className="font-medium">Filter Pengeluaran</h4>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Kategori</Label>
                   <Select
                     value={categoryFilter}
                     onValueChange={setCategoryFilter}
                   >
                     <SelectTrigger id="category">
-                      <SelectValue placeholder="All Categories" />
+                      <SelectValue placeholder="Semua Kategori" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
+                      <SelectItem value="">Semua Kategori</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
@@ -320,14 +322,14 @@ const Expenses = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Date Range</Label>
+                  <Label>Tanggal Range</Label>
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Label 
                         htmlFor="start-date" 
                         className="text-xs text-gray-500"
                       >
-                        From
+                        Dari
                       </Label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -340,7 +342,7 @@ const Expenses = () => {
                             {startDate ? (
                               format(startDate, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>Pilih tanggal</span>
                             )}
                           </Button>
                         </PopoverTrigger>
@@ -359,7 +361,7 @@ const Expenses = () => {
                         htmlFor="end-date" 
                         className="text-xs text-gray-500"
                       >
-                        To
+                        Sampai
                       </Label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -372,7 +374,7 @@ const Expenses = () => {
                             {endDate ? (
                               format(endDate, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>Pilih tanggal</span>
                             )}
                           </Button>
                         </PopoverTrigger>
@@ -395,13 +397,13 @@ const Expenses = () => {
                     size="sm"
                     onClick={resetFilters}
                   >
-                    Reset Filters
+                    Reset Filter
                   </Button>
                   <Button 
                     size="sm"
                     onClick={() => setIsFilterOpen(false)}
                   >
-                    Apply Filters
+                    Terapkan Filter
                   </Button>
                 </div>
               </div>
@@ -414,9 +416,9 @@ const Expenses = () => {
       <Card>
         <CardHeader className="pb-0">
           <CardTitle>
-            Expenses List
+            Daftar Pengeluaran
             <span className="ml-2 text-sm font-normal text-gray-500">
-              ({filteredExpenses.length} items)
+              ({filteredExpenses.length} item)
             </span>
           </CardTitle>
         </CardHeader>
@@ -425,11 +427,11 @@ const Expenses = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Deskripsi</TableHead>
+                  <TableHead>Kategori</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead className="text-right">Jumlah</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -450,7 +452,7 @@ const Expenses = () => {
                         })}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${expense.amount.toFixed(2)}
+                        Rp {expense.amount.toLocaleString('id-ID')}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -469,7 +471,7 @@ const Expenses = () => {
                             onClick={() => handleDeleteExpense(expense.id)}
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
+                            <span className="sr-only">Hapus</span>
                           </Button>
                         </div>
                       </TableCell>
@@ -478,7 +480,7 @@ const Expenses = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-6 text-gray-500">
-                      No expenses found. Try adjusting your filters or add a new expense.
+                      Tidak ada pengeluaran ditemukan. Cobalah mengubah filter Anda atau tambahkan pengeluaran baru.
                     </TableCell>
                   </TableRow>
                 )}
@@ -492,35 +494,35 @@ const Expenses = () => {
       <Dialog open={addExpenseOpen} onOpenChange={setAddExpenseOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Expense</DialogTitle>
+            <DialogTitle>Tambah Pengeluaran</DialogTitle>
             <DialogDescription>
-              Enter the details of your expense below.
+              Isi detail pengeluaran Anda di bawah ini.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Deskripsi</Label>
               <Input
                 id="description"
-                placeholder="What was this expense for?"
+                placeholder="Untuk apa pengeluaran ini?"
                 value={newExpense.description}
                 onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount ($)</Label>
+              <Label htmlFor="amount">Jumlah (Rp)</Label>
               <Input
                 id="amount"
                 type="number"
                 step="0.01"
-                placeholder="0.00"
+                placeholder="0"
                 value={newExpense.amount || ""}
                 onChange={(e) => setNewExpense({...newExpense, amount: parseFloat(e.target.value) || 0})}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">Tanggal</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -532,7 +534,7 @@ const Expenses = () => {
                       {newExpense.date ? (
                         format(new Date(newExpense.date), "PPP")
                       ) : (
-                        <span>Pick a date</span>
+                        <span>Pilih tanggal</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -550,13 +552,13 @@ const Expenses = () => {
                 </Popover>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Kategori</Label>
                 <Select
                   value={newExpense.category}
                   onValueChange={(value) => setNewExpense({...newExpense, category: value})}
                 >
                   <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -574,13 +576,13 @@ const Expenses = () => {
               variant="outline"
               onClick={() => setAddExpenseOpen(false)}
             >
-              Cancel
+              Batal
             </Button>
             <Button
               onClick={saveNewExpense}
               disabled={!newExpense.description || newExpense.amount <= 0 || !newExpense.date}
             >
-              Add Expense
+              Tambah Pengeluaran
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -590,35 +592,35 @@ const Expenses = () => {
       <Dialog open={editExpenseOpen} onOpenChange={setEditExpenseOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Expense</DialogTitle>
+            <DialogTitle>Edit Pengeluaran</DialogTitle>
             <DialogDescription>
-              Update the details of your expense.
+              Perbarui detail pengeluaran Anda.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description">Deskripsi</Label>
               <Input
                 id="edit-description"
-                placeholder="What was this expense for?"
+                placeholder="Untuk apa pengeluaran ini?"
                 value={editExpense.description}
                 onChange={(e) => setEditExpense({...editExpense, description: e.target.value})}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-amount">Amount ($)</Label>
+              <Label htmlFor="edit-amount">Jumlah (Rp)</Label>
               <Input
                 id="edit-amount"
                 type="number"
                 step="0.01"
-                placeholder="0.00"
+                placeholder="0"
                 value={editExpense.amount || ""}
                 onChange={(e) => setEditExpense({...editExpense, amount: parseFloat(e.target.value) || 0})}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-date">Date</Label>
+                <Label htmlFor="edit-date">Tanggal</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -630,7 +632,7 @@ const Expenses = () => {
                       {editExpense.date ? (
                         format(new Date(editExpense.date), "PPP")
                       ) : (
-                        <span>Pick a date</span>
+                        <span>Pilih tanggal</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -648,13 +650,13 @@ const Expenses = () => {
                 </Popover>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-category">Category</Label>
+                <Label htmlFor="edit-category">Kategori</Label>
                 <Select
                   value={editExpense.category}
                   onValueChange={(value) => setEditExpense({...editExpense, category: value})}
                 >
                   <SelectTrigger id="edit-category">
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -672,13 +674,13 @@ const Expenses = () => {
               variant="outline"
               onClick={() => setEditExpenseOpen(false)}
             >
-              Cancel
+              Batal
             </Button>
             <Button
               onClick={saveEditedExpense}
               disabled={!editExpense.description || editExpense.amount <= 0 || !editExpense.date}
             >
-              Save Changes
+              Simpan Perubahan
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -688,9 +690,9 @@ const Expenses = () => {
       <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this expense. This action cannot be undone.
+              Ini akan menghapus pengeluaran ini secara permanen. Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -699,7 +701,7 @@ const Expenses = () => {
               className="bg-red-500 hover:bg-red-600"
               onClick={confirmDelete}
             >
-              Delete
+              Hapus
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
