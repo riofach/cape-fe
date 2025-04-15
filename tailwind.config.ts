@@ -18,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,7 +64,25 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// CAPE custom colors
+				cape: {
+					'50': '#f2fcf2',
+					'100': '#e0f7e0',
+					'200': '#c1ecc1',
+					'300': '#91da91',
+					'400': '#5cbe5c',
+					'500': '#33a133',
+					'600': '#2E7D32', // Primary green
+					'700': '#1B5E20', // Secondary darker green
+					'800': '#1a4d1a',
+					'900': '#163f16',
+					'950': '#072307',
+				},
+			},
+			backgroundImage: {
+				'primary-gradient': 'linear-gradient(to right, #2E7D32, #81C784)',
+				'secondary-gradient': 'linear-gradient(to right, #1B5E20, #4CAF50)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
