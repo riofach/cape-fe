@@ -2,7 +2,7 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpRight, CreditCard, DollarSign, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowUpRight, CreditCard, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -69,12 +69,23 @@ const recentTransactions = [
   }
 ];
 
+// Format Rupiah currency
+const formatRupiah = (amount: number) => {
+  return new Intl.NumberFormat('id-ID', { 
+    style: 'currency', 
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
 const Dashboard = () => {
   const [showAddExpense, setShowAddExpense] = useState(false);
 
-  const totalExpensesThisMonth = 1458.65;
+  const totalExpensesThisMonth = 1458650;
   const percentageChange = 5.2;
   const isIncreased = percentageChange > 0;
+  const averageDailySpending = Math.round(totalExpensesThisMonth / 31);
 
   return (
     <DashboardLayout>
@@ -104,8 +115,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <DollarSign className="h-5 w-5 text-primary mr-1" />
-                <span className="text-2xl font-bold">${totalExpensesThisMonth.toFixed(2)}</span>
+                <span className="text-2xl font-bold">{formatRupiah(totalExpensesThisMonth)}</span>
               </div>
               <div className={`flex items-center ${isIncreased ? 'text-red-500' : 'text-green-500'}`}>
                 {isIncreased ? (
@@ -129,8 +139,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
-              <DollarSign className="h-5 w-5 text-primary mr-1" />
-              <span className="text-2xl font-bold">$47.05</span>
+              <span className="text-2xl font-bold">{formatRupiah(averageDailySpending)}</span>
             </div>
             <p className="text-xs text-gray-500 mt-1">31 days in this month</p>
           </CardContent>
@@ -171,13 +180,13 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} />
                 <YAxis
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `Rp${value/1000}K`}
                   tickLine={false}
                   axisLine={false}
                   width={80}
                 />
                 <Tooltip
-                  formatter={(value) => [`$${value}`, 'Amount']}
+                  formatter={(value) => [`Rp${value.toLocaleString('id-ID')}`, 'Amount']}
                   contentStyle={{
                     borderRadius: '8px',
                     border: '1px solid #e2e8f0',
@@ -227,7 +236,7 @@ const Dashboard = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => [`$${value}`, 'Amount']}
+                    formatter={(value) => [`Rp${value.toLocaleString('id-ID')}`, 'Amount']}
                     contentStyle={{
                       borderRadius: '8px',
                       border: '1px solid #e2e8f0',
@@ -288,7 +297,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <span className="font-medium text-gray-900">${transaction.amount.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900">{formatRupiah(transaction.amount * 1000)}</span>
                   <div className="ml-2">
                     {transaction.trend === "up" ? (
                       <TrendingUp className="h-4 w-4 text-red-500" />
