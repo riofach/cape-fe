@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { CheckCircle2, XCircle, Eye } from "lucide-react";
 
 // Mock data for users
 const mockUsers = [
@@ -44,6 +44,7 @@ type PaymentStatus = "pending" | "approved" | "rejected";
 const Admin = () => {
   const [users, setUsers] = useState(mockUsers);
   const [payments, setPayments] = useState(mockPaymentProofs);
+  const [selectedProof, setSelectedProof] = useState<string | null>(null);
 
   const handleRoleChange = (userId: number, newRole: UserRole) => {
     setUsers(users.map(user => 
@@ -178,6 +179,13 @@ const Admin = () => {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedProof(payment.proofUrl)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
                             onClick={() => handlePaymentStatus(payment.id, "approved")}
                             className="bg-green-500 hover:bg-green-600"
                           >
@@ -199,6 +207,18 @@ const Admin = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={!!selectedProof} onOpenChange={() => setSelectedProof(null)}>
+          <DialogContent className="max-w-3xl">
+            <div className="w-full">
+              <img 
+                src={selectedProof || ''} 
+                alt="Payment Proof" 
+                className="w-full object-contain max-h-[70vh]"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

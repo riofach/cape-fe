@@ -14,6 +14,7 @@ import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
 import Pricing from "./pages/Pricing";
 import Payment from "./pages/Payment";
+import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/help" element={<Help />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
