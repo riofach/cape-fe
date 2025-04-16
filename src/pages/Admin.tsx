@@ -6,14 +6,18 @@ import { toast } from "@/hooks/use-toast";
 import UserManagementTab from "@/components/admin/UserManagementTab";
 import PaymentProofTab from "@/components/admin/PaymentProofTab";
 
-// Mock data for users
+// Define types to match component expectations
+type UserRole = "free" | "pro" | "admin";
+type PaymentStatus = "pending" | "approved" | "rejected";
+
+// Mock data for users with proper typing
 const mockUsers = [
-  { id: 1, name: "John Doe", email: "john@example.com", role: "free" },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "pro" },
-  { id: 3, name: "Admin User", email: "admin@example.com", role: "admin" },
+  { id: 1, name: "John Doe", email: "john@example.com", role: "free" as UserRole },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "pro" as UserRole },
+  { id: 3, name: "Admin User", email: "admin@example.com", role: "admin" as UserRole },
 ];
 
-// Mock data for payment proofs
+// Mock data for payment proofs with proper typing
 const mockPaymentProofs = [
   {
     id: 1,
@@ -21,7 +25,7 @@ const mockPaymentProofs = [
     email: "john@example.com",
     date: "2025-04-16",
     amount: 99000,
-    status: "pending",
+    status: "pending" as PaymentStatus,
     proofUrl: "https://example.com/proof1.jpg",
   },
   {
@@ -30,13 +34,10 @@ const mockPaymentProofs = [
     email: "jane@example.com",
     date: "2025-04-15",
     amount: 99000,
-    status: "approved",
+    status: "approved" as PaymentStatus,
     proofUrl: "https://example.com/proof2.jpg",
   },
 ];
-
-type UserRole = "free" | "pro" | "admin";
-type PaymentStatus = "pending" | "approved" | "rejected";
 
 const Admin = () => {
   const [users, setUsers] = useState(mockUsers);
