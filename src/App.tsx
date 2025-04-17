@@ -16,6 +16,8 @@ import Pricing from './pages/Pricing';
 import Payment from './pages/Payment';
 import Help from './pages/Help';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Income from './pages/Income';
+import Profile from './pages/Profile';
 
 const queryClient = new QueryClient();
 
@@ -71,6 +73,22 @@ const App = () => (
 						}
 					/>
 					<Route path="/help" element={<Help />} />
+					<Route
+						path="/income"
+						element={
+							<ProtectedRoute>
+								<Income />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/profile"
+						element={
+							<ProtectedRoute>
+								<Profile />
+							</ProtectedRoute>
+						}
+					/>
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</BrowserRouter>

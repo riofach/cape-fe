@@ -7,10 +7,10 @@ import {
 	Home,
 	LogOut,
 	Menu,
-	Settings,
 	UserCircle,
 	X,
 	UserCog,
+	PiggyBank,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,19 +54,35 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 			current: location.pathname === '/expenses',
 		},
 		{
+			name: 'Income',
+			icon: PiggyBank,
+			href: '/income',
+			current: location.pathname === '/income',
+		},
+		{
 			name: 'Reports',
 			icon: BarChart3,
 			href: '/reports',
 			current: location.pathname === '/reports',
 		},
-		// {
-		// 	name: 'Settings',
-		// 	icon: Settings,
-		// 	href: '/settings',
-		// 	current: location.pathname === '/settings',
-		// },
-		// { name: 'Help', icon: FileText, href: '/help', current: location.pathname === '/help' },
-		{ name: 'Admin', icon: UserCog, href: '/admin', current: location.pathname === '/admin' },
+		{
+			name: 'Profile',
+			icon: UserCircle,
+			href: '/profile',
+			current: location.pathname === '/profile',
+		},
+		{
+			name: 'Help',
+			icon: FileText,
+			href: '/help',
+			current: location.pathname === '/help',
+		},
+		{
+			name: 'Admin',
+			icon: UserCog,
+			href: '/admin',
+			current: location.pathname === '/admin',
+		},
 	];
 
 	const handleLogout = () => {
@@ -96,8 +112,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 								<div className="h-full flex flex-col">
 									{/* Mobile Sidebar Header */}
 									<div className="px-4 py-6 border-b border-gray-200 flex items-center">
-										<div className="w-8 h-8 rounded bg-primary-gradient flex items-center justify-center">
-											<span className="text-white font-bold text-xl">C</span>
+										<div className="w-8 h-8 rounded flex items-center justify-center">
+											<img src="/cape2.png" alt="CAPE Logo" className="w-8 h-8" />
 										</div>
 										<span className="font-bold text-xl text-gray-900 ml-2">CAPE</span>
 									</div>
@@ -139,8 +155,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
 						{/* Logo - Visible on All Screens */}
 						<Link to="/dashboard" className="flex items-center space-x-2">
-							<div className="w-8 h-8 rounded bg-primary-gradient flex items-center justify-center">
-								<span className="text-white font-bold text-xl">C</span>
+							<div className="w-8 h-8 rounded flex items-center justify-center">
+								<img src="/cape2.png" alt="CAPE Logo" className="w-8 h-8" />
 							</div>
 							<span className="font-bold text-xl text-gray-900">CAPE</span>
 						</Link>

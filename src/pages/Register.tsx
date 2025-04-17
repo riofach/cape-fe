@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import MainLayout from '@/components/layout/MainLayout';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { apiRequest } from '@/utils/api';
+
+const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
+const validatePhone = (phone: string) => /^62\d{9,13}$/.test(phone);
 
 const Register = () => {
 	const [fullName, setFullName] = useState('');
@@ -16,9 +19,26 @@ const Register = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [phoneNumber, setPhoneNumber] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!fullName || fullName.length < 3) {
+			setError('Nama lengkap minimal 3 karakter.');
+			return;
+		}
+		if (!validatePhone(phoneNumber)) {
+			setError('Nomor telepon harus format Indonesia (62xxxxxxxxxxx).');
+			return;
+		}
+		if (!validateEmail(email)) {
+			setError('Email tidak valid.');
+			return;
+		}
+		if (!password || password.length < 8) {
+			setError('Password minimal 8 karakter.');
+			return;
+		}
 		if (!agreeTerms) {
 			setError('You must agree to the terms.');
 			return;
@@ -36,6 +56,7 @@ const Register = () => {
 				}),
 			});
 			localStorage.setItem('token', res.data.token);
+			localStorage.setItem('user', JSON.stringify(res.data.user));
 			window.location.href = '/dashboard';
 		} catch (err: unknown) {
 			if (typeof err === 'object' && err && 'message' in err) {
@@ -53,8 +74,8 @@ const Register = () => {
 			<div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
 				<div className="w-full max-w-md space-y-8">
 					<div className="text-center">
-						<div className="w-12 h-12 rounded bg-primary-gradient flex items-center justify-center mx-auto">
-							<span className="text-white font-bold text-2xl">C</span>
+						<div className="w-20 h-20 rounded flex items-center justify-center mx-auto">
+							<img src="/cape2.png" alt="CAPE Logo" className="w-20" />
 						</div>
 						<h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
 							Create your account
@@ -117,18 +138,26 @@ const Register = () => {
 
 							<div>
 								<Label htmlFor="password">Password</Label>
-								<div className="mt-1">
+								<div className="mt-1 relative">
 									<Input
 										id="password"
 										name="password"
-										type="password"
+										type={showPassword ? 'text' : 'password'}
 										autoComplete="new-password"
 										required
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
-										className="block w-full"
+										className="block w-full pr-10"
 										placeholder="Create a password"
 									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword((prev) => !prev)}
+										className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 focus:outline-none"
+										tabIndex={-1}
+									>
+										{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+									</button>
 								</div>
 								<p className="mt-1 text-sm text-gray-500">
 									Password must be at least 8 characters long
@@ -166,7 +195,7 @@ const Register = () => {
 							</div>
 						</form>
 
-						<div className="mt-6">
+						{/* <div className="mt-6">
 							<div className="relative">
 								<div className="absolute inset-0 flex items-center">
 									<div className="w-full border-t border-gray-300" />
@@ -193,7 +222,7 @@ const Register = () => {
 									Google
 								</Button>
 							</div>
-						</div>
+						</div> */}
 					</div>
 
 					<div className="text-center mt-4">

@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import MainLayout from '@/components/layout/MainLayout';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { apiRequest } from '@/utils/api';
+
+const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
+const validatePhone = (phone: string) => /^62\d{9,13}$/.test(phone);
 
 const Login = () => {
 	const [email, setEmail] = useState('');
@@ -14,9 +17,18 @@ const Login = () => {
 	const [rememberMe, setRememberMe] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [showPassword, setShowPassword] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!validateEmail(email) && !validatePhone(email)) {
+			setError('Masukkan email atau nomor telepon Indonesia yang valid.');
+			return;
+		}
+		if (!password || password.length < 8) {
+			setError('Password minimal 8 karakter.');
+			return;
+		}
 		setLoading(true);
 		setError(null);
 		try {
@@ -26,6 +38,7 @@ const Login = () => {
 			});
 			// Simpan token ke localStorage
 			localStorage.setItem('token', res.data.token);
+			localStorage.setItem('user', JSON.stringify(res.data.user));
 			// Redirect ke dashboard
 			window.location.href = '/dashboard';
 		} catch (err: unknown) {
@@ -44,8 +57,8 @@ const Login = () => {
 			<div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
 				<div className="w-full max-w-md space-y-8">
 					<div className="text-center">
-						<div className="w-12 h-12 rounded bg-primary-gradient flex items-center justify-center mx-auto">
-							<span className="text-white font-bold text-2xl">C</span>
+						<div className="w-20 h-20 rounded flex items-center justify-center mx-auto">
+							<img src="/cape2.png" alt="CAPE Logo" className="w-20" />
 						</div>
 						<h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">Welcome back</h2>
 						<p className="mt-2 text-sm text-gray-600">Sign in to your account to continue</p>
@@ -83,18 +96,26 @@ const Login = () => {
 										</Link>
 									</div>
 								</div>
-								<div className="mt-1">
+								<div className="mt-1 relative">
 									<Input
 										id="password"
 										name="password"
-										type="password"
+										type={showPassword ? 'text' : 'password'}
 										autoComplete="current-password"
 										required
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
-										className="block w-full"
+										className="block w-full pr-10"
 										placeholder="Enter your password"
 									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword((prev) => !prev)}
+										className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 focus:outline-none"
+										tabIndex={-1}
+									>
+										{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+									</button>
 								</div>
 							</div>
 
