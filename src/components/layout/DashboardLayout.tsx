@@ -175,10 +175,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 										{user ? user.username?.slice(0, 2).toUpperCase() : 'U'}
 									</AvatarFallback>
 								</Avatar>
-								{user && user.role === 'pro' && (
-									<Badge className="absolute -top-2 -right-2 bg-[#8B5CF6] hover:bg-[#7C3AED] px-2 py-0.5 text-[10px]">
-										PRO
-									</Badge>
+								{user && (
+									<>
+										{user.role === 'admin' ? (
+											<Badge className="absolute -top-2 -right-2 bg-red-500 text-white px-2 py-0.5 text-[10px]">
+												ADMIN
+											</Badge>
+										) : user.role === 'pro' ? (
+											<Badge className="absolute -top-2 -right-2 bg-[#8B5CF6] hover:bg-[#7C3AED] px-2 py-0.5 text-[10px]">
+												PRO
+											</Badge>
+										) : null}
+									</>
 								)}
 							</div>
 						</div>

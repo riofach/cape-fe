@@ -26,6 +26,14 @@ const formatRupiah = (amount: number) => {
 	}).format(amount);
 };
 
+// Fungsi format singkat untuk YAxis
+function formatShortRupiah(value: number) {
+	if (value >= 1_000_000_000) return `Rp${(value / 1_000_000_000).toFixed(1)}M`;
+	if (value >= 1_000_000) return `Rp${(value / 1_000_000).toFixed(1)}Jt`;
+	if (value >= 1_000) return `Rp${(value / 1_000).toFixed(1)}K`;
+	return `Rp${value}`;
+}
+
 const Dashboard = () => {
 	const [showAddExpense, setShowAddExpense] = useState(false);
 	const [totalExpenses, setTotalExpenses] = useState(0);
@@ -93,6 +101,26 @@ const Dashboard = () => {
 	// Hitung average daily spending (asumsi 30 hari)
 	const averageDailySpending = totalExpenses ? Math.round(totalExpenses / 30) : 0;
 
+	// Temukan kategori dengan persentase tertinggi
+	const biggestCategory =
+		categoryData.length > 0
+			? categoryData.reduce((max, cat) => (cat.value > max.value ? cat : max), categoryData[0])
+			: null;
+	const biggestCategoryPercent =
+		biggestCategory && totalExpenses > 0
+			? Math.round((biggestCategory.value / totalExpenses) * 100)
+			: 0;
+
+	// Untuk Spending by Category, ambil hanya 6 kategori terbesar
+	const topCategories = [...categoryData].sort((a, b) => b.value - a.value).slice(0, 6);
+
+	// Urutkan recentTransactions dari terbaru ke terlama
+	const sortedRecentTransactions = [...recentTransactions].sort((a, b) => {
+		const dateA = a.expenseDate ? new Date(a.expenseDate).getTime() : 0;
+		const dateB = b.expenseDate ? new Date(b.expenseDate).getTime() : 0;
+		return dateB - dateA;
+	});
+
 	return (
 		<DashboardLayout>
 			<div className="flex justify-between items-center mb-6">
@@ -154,18 +182,14 @@ const Dashboard = () => {
 							<CardContent>
 								<div className="flex items-center justify-between">
 									<div>
-										<span className="text-2xl font-bold">{categoryData[0]?.name || '-'}</span>
+										<span className="text-2xl font-bold">{biggestCategory?.name || '-'}</span>
 										<p className="text-xs text-gray-500 mt-1">
-											{categoryData[0]
-												? `${Math.round(
-														(categoryData[0].value / (totalExpenses || 1)) * 100
-												  )}% of total expenses`
-												: '-'}
+											{biggestCategory ? `${biggestCategoryPercent}% of total expenses` : '-'}
 										</p>
 									</div>
 									<div
 										className="w-10 h-10 rounded-full"
-										style={{ background: categoryData[0]?.color || '#00C49F' }}
+										style={{ background: biggestCategory?.color || '#00C49F' }}
 									>
 										<CreditCard className="h-5 w-5 text-white mx-auto my-2" />
 									</div>
@@ -192,7 +216,7 @@ const Dashboard = () => {
 										>
 											<CartesianGrid strokeDasharray="3 3" />
 											<XAxis dataKey="label" />
-											<YAxis tickFormatter={formatRupiah} />
+											<YAxis tickFormatter={formatShortRupiah} />
 											<Tooltip formatter={(value) => formatRupiah(Number(value))} />
 											<Bar
 												dataKey="total"
@@ -222,7 +246,7 @@ const Dashboard = () => {
 									<ResponsiveContainer width="100%" height="100%">
 										<PieChart>
 											<Pie
-												data={categoryData}
+												data={topCategories}
 												cx="50%"
 												cy="50%"
 												innerRadius={70}
@@ -232,7 +256,7 @@ const Dashboard = () => {
 												label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
 												labelLine={false}
 											>
-												{categoryData.map((entry, index) => (
+												{topCategories.map((entry, index) => (
 													<Cell key={`cell-${index}`} fill={entry.color} />
 												))}
 											</Pie>
@@ -248,7 +272,7 @@ const Dashboard = () => {
 									</ResponsiveContainer>
 								</div>
 								<div className="flex justify-center space-x-4 mt-4">
-									{categoryData.map((category, index) => (
+									{topCategories.map((category, index) => (
 										<div key={index} className="flex items-center space-x-2">
 											<span
 												className="w-3 h-3 rounded-full"
@@ -274,7 +298,7 @@ const Dashboard = () => {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
-								{recentTransactions.map((transaction) => (
+								{sortedRecentTransactions.map((transaction) => (
 									<div
 										key={transaction._id}
 										className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"

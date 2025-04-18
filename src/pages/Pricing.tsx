@@ -133,7 +133,7 @@ const Pricing = () => {
 							</div>
 						</CardContent>
 						<CardFooter>
-							{userRole !== 'pro' ? (
+							{userRole !== 'pro' && userRole !== 'admin' ? (
 								<Link to="/payment" className="w-full">
 									<Button className="w-full bg-primary">Upgrade to Pro</Button>
 								</Link>

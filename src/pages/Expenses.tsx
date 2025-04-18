@@ -62,21 +62,6 @@ type Expense = {
 	category: string;
 };
 
-const categories = [
-	'Food',
-	'Housing',
-	'Transportation',
-	'Entertainment',
-	'Utilities',
-	'Health & Fitness',
-	'Education',
-	'Shopping',
-	'Personal Care',
-	'Travel',
-	'Gifts & Donations',
-	'Other',
-];
-
 const formatRupiah = (amount: number) => {
 	return new Intl.NumberFormat('id-ID', {
 		style: 'currency',
@@ -107,11 +92,13 @@ const Expenses = () => {
 	const [editExpenseOpen, setEditExpenseOpen] = useState(false);
 	const [editExpense, setEditExpense] = useState<Expense | null>(null);
 	const [addExpenseOpen, setAddExpenseOpen] = useState(false);
-	const [newExpense, setNewExpense] = useState<Omit<Expense, '_id'>>({
+	const [newExpense, setNewExpense] = useState<
+		Omit<Expense, '_id'> & { amount: number | undefined }
+	>({
 		description: '',
-		amount: 0,
+		amount: undefined,
 		expenseDate: format(new Date(), 'yyyy-MM-dd'),
-		category: 'Food',
+		category: '',
 	});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -161,11 +148,31 @@ const Expenses = () => {
 		return matchesSearch;
 	});
 
+	// Untuk select kategori (tambah/edit), hanya tampilkan jika userCategories sudah ada
+	const hasCategoryList = userCategories.length > 0;
+
 	// Handle add expense
 	const handleAddExpense = async () => {
 		try {
 			setLoading(true);
 			setError(null);
+			// Jika user hanya mengisi tanggal (tanpa jam), set jam ke waktu saat ini
+			let expenseDate = newExpense.expenseDate;
+			if (expenseDate && expenseDate.length === 10) {
+				// yyyy-MM-dd
+				const now = new Date();
+				const [year, month, day] = expenseDate.split('-').map(Number);
+				const withTime = new Date(
+					year,
+					month - 1,
+					day,
+					now.getHours(),
+					now.getMinutes(),
+					now.getSeconds(),
+					now.getMilliseconds()
+				);
+				expenseDate = withTime.toISOString();
+			}
 			const res = await apiRequest(
 				'/expenses',
 				{
@@ -173,16 +180,21 @@ const Expenses = () => {
 					body: JSON.stringify({
 						...newExpense,
 						amount: Number(newExpense.amount),
+						expenseDate,
 					}),
 				},
 				true
 			);
+			// Tambahkan kategori manual ke userCategories jika belum ada
+			if (newExpense.category && !userCategories.includes(newExpense.category)) {
+				setUserCategories((prev) => [...prev, newExpense.category]);
+			}
 			setAddExpenseOpen(false);
 			setNewExpense({
 				description: '',
-				amount: 0,
+				amount: undefined,
 				expenseDate: format(new Date(), 'yyyy-MM-dd'),
-				category: 'Food',
+				category: '',
 			});
 			fetchExpenses();
 		} catch (err) {
@@ -470,30 +482,49 @@ const Expenses = () => {
 									<Label>Amount (Rp)</Label>
 									<Input
 										type="number"
-										value={newExpense.amount}
+										value={newExpense.amount === undefined ? '' : newExpense.amount}
 										onChange={(e) =>
-											setNewExpense({ ...newExpense, amount: Number(e.target.value) })
+											setNewExpense({
+												...newExpense,
+												amount: e.target.value === '' ? undefined : Number(e.target.value),
+											})
 										}
-										placeholder="Amount"
+										placeholder="0"
 									/>
 								</div>
 								<div>
 									<Label>Category</Label>
-									<Select
+									{hasCategoryList && (
+										<Select
+											value={
+												newExpense.category && userCategories.includes(newExpense.category)
+													? newExpense.category
+													: ''
+											}
+											onValueChange={(cat) => setNewExpense({ ...newExpense, category: cat })}
+										>
+											<SelectTrigger className="w-full">
+												<SelectValue placeholder="Select category" />
+											</SelectTrigger>
+											<SelectContent>
+												{userCategories.map((cat) => (
+													<SelectItem key={cat} value={cat}>
+														{cat}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+									<Input
+										placeholder="Type or select category"
 										value={newExpense.category}
-										onValueChange={(cat) => setNewExpense({ ...newExpense, category: cat })}
-									>
-										<SelectTrigger className="w-full">
-											<SelectValue placeholder="Select category" />
-										</SelectTrigger>
-										<SelectContent>
-											{categories.map((cat) => (
-												<SelectItem key={cat} value={cat}>
-													{cat}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+										maxLength={30}
+										onChange={(e) => {
+											let val = e.target.value;
+											if (val.length === 1) val = val.toUpperCase();
+											setNewExpense({ ...newExpense, category: val });
+										}}
+									/>
 								</div>
 								<div>
 									<Label>Date</Label>
@@ -541,21 +572,23 @@ const Expenses = () => {
 									</div>
 									<div>
 										<Label>Category</Label>
-										<Select
-											value={editExpense.category}
-											onValueChange={(cat) => setEditExpense({ ...editExpense, category: cat })}
-										>
-											<SelectTrigger className="w-full">
-												<SelectValue placeholder="Select category" />
-											</SelectTrigger>
-											<SelectContent>
-												{categories.map((cat) => (
-													<SelectItem key={cat} value={cat}>
-														{cat}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										{hasCategoryList && (
+											<Select
+												value={editExpense.category}
+												onValueChange={(cat) => setEditExpense({ ...editExpense, category: cat })}
+											>
+												<SelectTrigger className="w-full">
+													<SelectValue placeholder="Select category" />
+												</SelectTrigger>
+												<SelectContent>
+													{userCategories.map((cat) => (
+														<SelectItem key={cat} value={cat}>
+															{cat}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										)}
 									</div>
 									<div>
 										<Label>Date</Label>
