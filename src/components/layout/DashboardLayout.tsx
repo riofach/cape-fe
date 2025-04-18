@@ -113,7 +113,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 									{/* Mobile Sidebar Header */}
 									<div className="px-4 py-6 border-b border-gray-200 flex items-center">
 										<div className="w-8 h-8 rounded flex items-center justify-center">
-											<img src="/cape2.png" alt="CAPE Logo" className="w-8 h-8" />
+											<img src="/cape2.png" alt="CAPE Logo" className="w-8" />
 										</div>
 										<span className="font-bold text-xl text-gray-900 ml-2">CAPE</span>
 									</div>
@@ -156,7 +156,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 						{/* Logo - Visible on All Screens */}
 						<Link to="/dashboard" className="flex items-center space-x-2">
 							<div className="w-8 h-8 rounded flex items-center justify-center">
-								<img src="/cape2.png" alt="CAPE Logo" className="w-8 h-8" />
+								<img src="/cape2.png" alt="CAPE Logo" className="w-8" />
 							</div>
 							<span className="font-bold text-xl text-gray-900">CAPE</span>
 						</Link>

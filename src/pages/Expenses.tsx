@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -115,6 +115,21 @@ const Expenses = () => {
 	});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [userCategories, setUserCategories] = useState<string[]>([]);
+
+	// Ambil kategori unik user dari backend
+	const fetchCategories = useCallback(async () => {
+		try {
+			const res = await apiRequest('/expenses/categories', {}, true);
+			setUserCategories(res.data || []);
+		} catch {
+			setUserCategories([]);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchCategories();
+	}, [fetchCategories]);
 
 	// Fetch expenses from API
 	const fetchExpenses = async () => {
@@ -258,54 +273,114 @@ const Expenses = () => {
 				<div>Loading...</div>
 			) : (
 				<>
-					{/* Filter & Search */}
-					<div className="flex flex-wrap gap-2 mb-4 items-center">
-						<Input
-							placeholder="Search description..."
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							className="w-48"
-						/>
-						<Select value={categoryFilter} onValueChange={setCategoryFilter}>
-							<SelectTrigger className="w-40">
-								<SelectValue placeholder="All Categories" />
-							</SelectTrigger>
-							<SelectContent>
-								{categories.map((cat) => (
-									<SelectItem key={cat} value={cat}>
-										{cat}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-							<PopoverTrigger asChild>
-								<Button variant="outline" size="sm" className="flex items-center gap-2">
-									<SlidersHorizontal className="h-4 w-4" /> Filter by Date
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent className="w-auto p-4" align="start">
-								<div className="flex flex-col gap-2">
-									<Label>Start Date</Label>
-									<Calendar
-										mode="single"
-										selected={startDate}
-										onSelect={setStartDate}
-										className="rounded-md border"
-									/>
-									<Label>End Date</Label>
-									<Calendar
-										mode="single"
-										selected={endDate}
-										onSelect={setEndDate}
-										className="rounded-md border"
-									/>
-									<Button variant="outline" size="sm" onClick={resetFilters} className="mt-2">
-										Reset
+					{/* Filters and Search */}
+					<div className="flex flex-col lg:flex-row gap-4 mb-6">
+						<div className="flex-1 relative">
+							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+							<Input
+								placeholder="Cari pengeluaran..."
+								className="pl-10"
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+							/>
+						</div>
+						<div className="flex gap-3">
+							<Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+								<PopoverTrigger asChild>
+									<Button variant="outline" className="flex items-center">
+										<SlidersHorizontal className="mr-2 h-4 w-4" />
+										Filter
+										{(categoryFilter || startDate || endDate) && (
+											<span className="ml-2 w-2 h-2 rounded-full bg-primary"></span>
+										)}
 									</Button>
-								</div>
-							</PopoverContent>
-						</Popover>
+								</PopoverTrigger>
+								<PopoverContent className="w-80">
+									<div className="space-y-4">
+										<h4 className="font-medium">Filter Pengeluaran</h4>
+										<div className="space-y-2">
+											<Label htmlFor="category">Kategori</Label>
+											<Select value={categoryFilter} onValueChange={setCategoryFilter}>
+												<SelectTrigger id="category">
+													<SelectValue placeholder="Semua Kategori" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="all">Semua Kategori</SelectItem>
+													{userCategories.map((category) => (
+														<SelectItem key={category} value={category}>
+															{category}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										<div className="space-y-2">
+											<Label>Tanggal Range</Label>
+											<div className="flex gap-2">
+												<div className="flex-1">
+													<Label htmlFor="start-date" className="text-xs text-gray-500">
+														Dari
+													</Label>
+													<Popover>
+														<PopoverTrigger asChild>
+															<Button
+																variant="outline"
+																className="w-full justify-start text-left font-normal"
+																id="start-date"
+															>
+																<CalendarIcon className="mr-2 h-4 w-4" />
+																{startDate ? format(startDate, 'PPP') : <span>Pilih tanggal</span>}
+															</Button>
+														</PopoverTrigger>
+														<PopoverContent className="w-auto p-0">
+															<Calendar
+																mode="single"
+																selected={startDate}
+																onSelect={setStartDate}
+																initialFocus
+															/>
+														</PopoverContent>
+													</Popover>
+												</div>
+												<div className="flex-1">
+													<Label htmlFor="end-date" className="text-xs text-gray-500">
+														Sampai
+													</Label>
+													<Popover>
+														<PopoverTrigger asChild>
+															<Button
+																variant="outline"
+																className="w-full justify-start text-left font-normal"
+																id="end-date"
+															>
+																<CalendarIcon className="mr-2 h-4 w-4" />
+																{endDate ? format(endDate, 'PPP') : <span>Pilih tanggal</span>}
+															</Button>
+														</PopoverTrigger>
+														<PopoverContent className="w-auto p-0">
+															<Calendar
+																mode="single"
+																selected={endDate}
+																onSelect={setEndDate}
+																initialFocus
+															/>
+														</PopoverContent>
+													</Popover>
+												</div>
+											</div>
+										</div>
+										<div className="flex justify-between pt-2">
+											<Button variant="outline" size="sm" onClick={resetFilters}>
+												Reset Filter
+											</Button>
+											<Button size="sm" onClick={() => setIsFilterOpen(false)}>
+												Terapkan Filter
+											</Button>
+										</div>
+									</div>
+								</PopoverContent>
+							</Popover>
+						</div>
 					</div>
 					{/* Expenses Table */}
 					<Card>

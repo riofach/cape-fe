@@ -194,7 +194,18 @@ const Dashboard = () => {
 											<XAxis dataKey="label" />
 											<YAxis tickFormatter={formatRupiah} />
 											<Tooltip formatter={(value) => formatRupiah(Number(value))} />
-											<Bar dataKey="total" fill="#0088FE" radius={[8, 8, 0, 0]} />
+											<Bar
+												dataKey="total"
+												fill="url(#barGradient)"
+												radius={[8, 8, 0, 0]}
+												barSize={40}
+											/>
+											<defs>
+												<linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+													<stop offset="0%" stopColor="#2E7D32" />
+													<stop offset="100%" stopColor="#81C784" />
+												</linearGradient>
+											</defs>
 										</BarChart>
 									</ResponsiveContainer>
 								)}
@@ -251,64 +262,52 @@ const Dashboard = () => {
 						</Card>
 					</div>
 					{/* Recent Transactions */}
-					<div className="mb-8">
-						<Card>
-							<CardHeader>
+					<Card>
+						<CardHeader className="flex flex-row items-center justify-between">
+							<div>
 								<CardTitle>Recent Transactions</CardTitle>
-								<CardDescription>5 most recent expenses</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="overflow-x-auto">
-									<table className="min-w-full divide-y divide-gray-200">
-										<thead>
-											<tr>
-												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Date
-												</th>
-												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Description
-												</th>
-												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Category
-												</th>
-												<th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
-													Amount
-												</th>
-											</tr>
-										</thead>
-										<tbody className="bg-white divide-y divide-gray-200">
-											{recentTransactions.length === 0 ? (
-												<tr>
-													<td colSpan={4} className="text-center py-4 text-gray-400">
-														No data
-													</td>
-												</tr>
-											) : (
-												recentTransactions.map((tx) => (
-													<tr key={tx._id}>
-														<td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-															{tx.expenseDate
-																? new Date(tx.expenseDate).toLocaleDateString('id-ID')
-																: '-'}
-														</td>
-														<td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-															{tx.description}
-														</td>
-														<td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-															{tx.category}
-														</td>
-														<td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">
-															{formatRupiah(tx.amount)}
-														</td>
-													</tr>
-												))
-											)}
-										</tbody>
-									</table>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
+								<CardDescription>Your latest expenses</CardDescription>
+							</div>
+							<Button variant="ghost" size="sm" className="text-primary">
+								View All <ArrowUpRight className="ml-1 h-4 w-4" />
+							</Button>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-4">
+								{recentTransactions.map((transaction) => (
+									<div
+										key={transaction._id}
+										className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+									>
+										<div className="flex items-center space-x-4">
+											<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+												<CreditCard className="h-5 w-5" />
+											</div>
+											<div>
+												<p className="font-medium text-gray-900">{transaction.description}</p>
+												<p className="text-sm text-gray-500">
+													{transaction.expenseDate
+														? new Date(transaction.expenseDate).toLocaleDateString('en-US', {
+																year: 'numeric',
+																month: 'short',
+																day: 'numeric',
+														  })
+														: '-'}
+													{' · '}
+													{transaction.category}
+												</p>
+											</div>
+										</div>
+										<div className="flex items-center">
+											<span className="font-medium text-gray-900">
+												{formatRupiah(transaction.amount)}
+											</span>
+										</div>
+									</div>
+								))}
+							</div>
+						</CardContent>
+					</Card>
 				</>
 			)}
 		</DashboardLayout>
