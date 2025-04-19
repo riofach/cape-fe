@@ -177,6 +177,7 @@ const Reports = () => {
 		[]
 	);
 	const [userRole, setUserRole] = useState<string | null>(null);
+	const [forbidden, setForbidden] = useState(false);
 	const navigate = useNavigate();
 
 	const fetchReport = async () => {
@@ -189,7 +190,17 @@ const Reports = () => {
 				true
 			);
 			setReport(res.data);
-		} catch (err) {
+		} catch (err: unknown) {
+			if (
+				typeof err === 'object' &&
+				err !== null &&
+				'status' in err &&
+				(err as { status?: number }).status === 403
+			) {
+				setForbidden(true);
+				setReport(null);
+				return;
+			}
 			setError('Gagal memuat laporan');
 		} finally {
 			setLoading(false);
@@ -200,7 +211,17 @@ const Reports = () => {
 		try {
 			const res = await apiRequest(`/expenses/report/yearly?year=${selectedYear}`, {}, true);
 			setYearlyData(res.data || []);
-		} catch (err) {
+		} catch (err: unknown) {
+			if (
+				typeof err === 'object' &&
+				err !== null &&
+				'status' in err &&
+				(err as { status?: number }).status === 403
+			) {
+				setForbidden(true);
+				setYearlyData([]);
+				return;
+			}
 			// Tidak perlu error state khusus, biarkan kosong
 		}
 	};
@@ -247,16 +268,28 @@ const Reports = () => {
 	return (
 		<DashboardLayout>
 			<div className="relative w-full h-full">
-				<div className={isFreeUser ? 'relative' : ''}>
-					{isFreeUser && (
+				<div className={isFreeUser || forbidden ? 'relative' : ''}>
+					{(isFreeUser || forbidden) && (
 						<>
 							<div className="absolute inset-0 z-20 pointer-events-none select-none bg-white/70 backdrop-blur-md" />
 							<div className="absolute left-1/2 top-24 z-30 -translate-x-1/2 flex items-start justify-center w-full pointer-events-auto">
 								<div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full flex flex-col items-center gap-6">
-									<h2 className="text-xl font-bold text-center">
-										Untuk memakai fitur ini silakan upgrade ke{' '}
-										<span className="text-primary">Pro</span>
-									</h2>
+									{forbidden ? (
+										<>
+											<h2 className="text-xl font-bold text-center text-red-600">
+												Akses laporan hanya untuk user Pro
+											</h2>
+											<p className="text-center text-gray-600">
+												Silakan upgrade akun Anda untuk mengakses fitur laporan dan analisis
+												keuangan.
+											</p>
+										</>
+									) : (
+										<h2 className="text-xl font-bold text-center">
+											Untuk memakai fitur ini silakan upgrade ke{' '}
+											<span className="text-primary">Pro</span>
+										</h2>
+									)}
 									<button
 										className="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary/90 transition"
 										onClick={() => navigate('/pricing')}
@@ -267,7 +300,7 @@ const Reports = () => {
 							</div>
 						</>
 					)}
-					<div className={isFreeUser ? 'pointer-events-none select-none' : ''}>
+					<div className={isFreeUser || forbidden ? 'pointer-events-none select-none' : ''}>
 						{/* Page Title and Export Buttons */}
 						<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 							<div>

@@ -52,16 +52,36 @@ const Dashboard = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [monthlyExpenses, setMonthlyExpenses] = useState<{ label: string; total: number }[]>([]);
+	const [userRole, setUserRole] = useState<string | null>(null);
 
 	useEffect(() => {
+		const userStr = localStorage.getItem('user');
+		if (!userStr || userStr === 'undefined' || userStr === 'null') {
+			console.warn('User from localStorage is invalid:', userStr);
+			setUserRole('free');
+			return;
+		}
+		try {
+			const user = JSON.parse(userStr);
+			// console.log('Parsed user:', user);
+			if (user && user.role) setUserRole(user.role.toLowerCase());
+			else setUserRole('free');
+		} catch (e) {
+			console.error('Error parsing user:', e);
+			setUserRole('free');
+		}
+	}, []);
+
+	useEffect(() => {
+		// Jangan fetch apapun sebelum userRole terisi
+		if (userRole === null) return;
+		setLoading(true);
+		setError(null);
 		const fetchData = async () => {
-			setLoading(true);
-			setError(null);
 			try {
-				// Ambil laporan bulanan
+				// Ambil laporan bulanan (summary saja)
 				const report = await apiRequest('/expenses/report/monthly', {}, true);
 				setTotalExpenses(report.data.total || 0);
-				// Mapping kategori ke format PieChart
 				const colors = [
 					'#0088FE',
 					'#00C49F',
@@ -83,12 +103,16 @@ const Dashboard = () => {
 						})
 					)
 				);
-				// Ambil data chart bulanan
-				const monthly = await apiRequest('/expenses/report/last6months', {}, true);
-				setMonthlyExpenses(monthly.data || []);
 				// Ambil 5 transaksi terakhir
 				const recent = await apiRequest('/expenses/recent', {}, true);
 				setRecentTransactions(recent.data || []);
+				// Hanya fetch chart jika user pro/admin
+				if (userRole === 'pro' || userRole === 'admin') {
+					const monthly = await apiRequest('/expenses/report/last6months', {}, true);
+					setMonthlyExpenses(monthly.data || []);
+				} else {
+					setMonthlyExpenses([]); // kosongkan jika bukan pro/admin
+				}
 			} catch (err) {
 				setError('Gagal memuat data dashboard');
 			} finally {
@@ -96,7 +120,7 @@ const Dashboard = () => {
 			}
 		};
 		fetchData();
-	}, []);
+	}, [userRole]);
 
 	// Hitung average daily spending (asumsi 30 hari)
 	const averageDailySpending = totalExpenses ? Math.round(totalExpenses / 30) : 0;
@@ -121,6 +145,12 @@ const Dashboard = () => {
 		return dateB - dateA;
 	});
 
+	// Jangan tampilkan error merah jika user free
+	const showError = error && userRole !== 'free';
+
+	// Jika userRole belum terisi, tampilkan loading
+	if (userRole === null) return <div>Loading...</div>;
+
 	return (
 		<DashboardLayout>
 			<div className="flex justify-between items-center mb-6">
@@ -135,7 +165,7 @@ const Dashboard = () => {
 					<Plus className="mr-2 h-4 w-4" /> Add Expense
 				</Button> */}
 			</div>
-			{error && <div className="text-red-600 mb-4">{error}</div>}
+			{showError && <div className="text-red-600 mb-4">{error}</div>}
 			{loading ? (
 				<div>Loading...</div>
 			) : (
@@ -197,94 +227,87 @@ const Dashboard = () => {
 							</CardContent>
 						</Card>
 					</div>
-					{/* Charts Section */}
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-						{/* Monthly Expenses Chart */}
-						<Card className="col-span-1">
-							<CardHeader>
-								<CardTitle>Monthly Expenses</CardTitle>
-								<CardDescription>Your spending over the past 6 months</CardDescription>
-							</CardHeader>
-							<CardContent className="h-80 flex items-center justify-center">
-								{monthlyExpenses.length === 0 ? (
-									<span className="text-gray-400">No data</span>
-								) : (
-									<ResponsiveContainer width="100%" height="100%">
-										<BarChart
-											data={monthlyExpenses}
-											margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-										>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="label" />
-											<YAxis tickFormatter={formatShortRupiah} />
-											<Tooltip formatter={(value) => formatRupiah(Number(value))} />
-											<Bar
-												dataKey="total"
-												fill="url(#barGradient)"
-												radius={[8, 8, 0, 0]}
-												barSize={40}
-											/>
-											<defs>
-												<linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-													<stop offset="0%" stopColor="#2E7D32" />
-													<stop offset="100%" stopColor="#81C784" />
-												</linearGradient>
-											</defs>
-										</BarChart>
-									</ResponsiveContainer>
-								)}
-							</CardContent>
-						</Card>
-						{/* Category Breakdown */}
-						<Card className="col-span-1">
-							<CardHeader>
-								<CardTitle>Spending by Category</CardTitle>
-								<CardDescription>Breakdown of your expenses by category</CardDescription>
-							</CardHeader>
-							<CardContent className="flex flex-col h-80">
-								<div className="flex-1">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={topCategories}
-												cx="50%"
-												cy="50%"
-												innerRadius={70}
-												outerRadius={100}
-												paddingAngle={2}
-												dataKey="value"
-												label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-												labelLine={false}
-											>
-												{topCategories.map((entry, index) => (
-													<Cell key={`cell-${index}`} fill={entry.color} />
-												))}
-											</Pie>
-											<Tooltip
-												formatter={(value) => [`Rp${value.toLocaleString('id-ID')}`, 'Amount']}
-												contentStyle={{
-													borderRadius: '8px',
-													border: '1px solid #e2e8f0',
-													boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-												}}
-											/>
-										</PieChart>
-									</ResponsiveContainer>
-								</div>
-								<div className="flex justify-center space-x-4 mt-4">
-									{topCategories.map((category, index) => (
-										<div key={index} className="flex items-center space-x-2">
-											<span
-												className="w-3 h-3 rounded-full"
-												style={{ background: category.color }}
-											></span>
-											<span className="text-xs text-gray-700">{category.name}</span>
-										</div>
-									))}
-								</div>
-							</CardContent>
-						</Card>
-					</div>
+					{/* Charts Section hanya untuk user pro/admin */}
+					{(userRole === 'pro' || userRole === 'admin') && (
+						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative">
+							{/* Monthly Expenses Chart */}
+							<div className="relative">
+								<Card className="col-span-1">
+									<CardHeader>
+										<CardTitle>Monthly Expenses</CardTitle>
+										<CardDescription>Your spending over the past 6 months</CardDescription>
+									</CardHeader>
+									<CardContent className="h-80 flex items-center justify-center">
+										{monthlyExpenses.length === 0 ? (
+											<span className="text-gray-400">No data</span>
+										) : (
+											<ResponsiveContainer width="100%" height="100%">
+												<BarChart
+													data={monthlyExpenses}
+													margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+												>
+													<CartesianGrid strokeDasharray="3 3" />
+													<XAxis dataKey="label" />
+													<YAxis tickFormatter={formatShortRupiah} />
+													<Tooltip formatter={(value) => formatRupiah(Number(value))} />
+													<Bar
+														dataKey="total"
+														fill="url(#barGradient)"
+														radius={[8, 8, 0, 0]}
+														barSize={40}
+													/>
+													<defs>
+														<linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+															<stop offset="0%" stopColor="#2E7D32" />
+															<stop offset="100%" stopColor="#81C784" />
+														</linearGradient>
+													</defs>
+												</BarChart>
+											</ResponsiveContainer>
+										)}
+									</CardContent>
+								</Card>
+							</div>
+							{/* Category Breakdown */}
+							<div className="relative">
+								<Card className="col-span-1">
+									<CardHeader>
+										<CardTitle>Spending by Category</CardTitle>
+										<CardDescription>Breakdown of your expenses by category</CardDescription>
+									</CardHeader>
+									<CardContent className="flex flex-col h-80">
+										<ResponsiveContainer width="100%" height="100%">
+											<PieChart>
+												<Pie
+													data={topCategories}
+													cx="50%"
+													cy="50%"
+													innerRadius={70}
+													outerRadius={100}
+													paddingAngle={2}
+													dataKey="value"
+													label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+													labelLine={false}
+												>
+													{topCategories.map((entry, index) => (
+														<Cell key={`cell-${index}`} fill={entry.color} />
+													))}
+												</Pie>
+												<Tooltip
+													formatter={(value) => [`Rp${value.toLocaleString('id-ID')}`, 'Amount']}
+													contentStyle={{
+														borderRadius: '8px',
+														border: '1px solid #e2e8f0',
+														boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+													}}
+												/>
+											</PieChart>
+										</ResponsiveContainer>
+									</CardContent>
+								</Card>
+							</div>
+						</div>
+					)}
 					{/* Recent Transactions */}
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between">

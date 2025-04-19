@@ -130,6 +130,10 @@ const Pricing = () => {
 									<CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
 									<span>Detailed Analytics</span>
 								</div>
+								<div className="flex items-center">
+									<CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+									<span>Informative Dashboard</span>
+								</div>
 							</div>
 						</CardContent>
 						<CardFooter>
