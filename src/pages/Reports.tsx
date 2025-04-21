@@ -68,12 +68,6 @@ const categoryData = [
 	{ name: 'Lainnya', value: 14_000_000, color: '#ffc658' },
 ];
 
-// Daily spending data for the current month
-const dailySpendingData = Array.from({ length: 30 }, (_, i) => ({
-	day: i + 1,
-	amount: Math.floor(Math.random() * 150) + 10,
-}));
-
 // Top spending categories
 const topSpendingData = categoryData.sort((a, b) => b.value - a.value).slice(0, 5);
 
@@ -166,6 +160,20 @@ const categoryColors = [
 	'#4FC3F7', // Biru muda
 ];
 
+// Tambahkan tipe data
+interface DailyExpense {
+	day: number;
+	amount: number;
+	categories: { category: string; amount: number }[];
+}
+
+// Helper untuk format tanggal dari day, month, year
+const formatDayLabel = (day: number, month: string, year: string) => {
+	const monthNum = parseInt(month, 10) - 1;
+	const date = new Date(Number(year), monthNum, day);
+	return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
+};
+
 const Reports = () => {
 	const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 	const [selectedMonth, setSelectedMonth] = useState(
@@ -181,6 +189,9 @@ const Reports = () => {
 	const [userRole, setUserRole] = useState<string | null>(null);
 	const [forbidden, setForbidden] = useState(false);
 	const [categoryReport, setCategoryReport] = useState<{ name: string; amount: number }[]>([]);
+	const [dailyData, setDailyData] = useState<DailyExpense[]>([]);
+	const [dailyLoading, setDailyLoading] = useState(false);
+	const [dailyError, setDailyError] = useState<string | null>(null);
 	const navigate = useNavigate();
 
 	const fetchReport = async () => {
@@ -253,6 +264,25 @@ const Reports = () => {
 		}
 	};
 
+	// Fetch daily expenses dari backend
+	const fetchDaily = async () => {
+		setDailyLoading(true);
+		setDailyError(null);
+		try {
+			const res = await apiRequest(
+				`/expenses/report/daily?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
+				{},
+				true
+			);
+			setDailyData(res.data || []);
+		} catch (err) {
+			setDailyError('Gagal memuat data pengeluaran harian');
+			setDailyData([]);
+		} finally {
+			setDailyLoading(false);
+		}
+	};
+
 	useEffect(() => {
 		fetchReport();
 		fetchYearly();
@@ -262,6 +292,13 @@ const Reports = () => {
 	useEffect(() => {
 		if (selectedTab === 'categories') {
 			fetchCategoryReport();
+		}
+		// eslint-disable-next-line
+	}, [selectedTab, selectedMonth, selectedYear]);
+
+	useEffect(() => {
+		if (selectedTab === 'daily') {
+			fetchDaily();
 		}
 		// eslint-disable-next-line
 	}, [selectedTab, selectedMonth, selectedYear]);
@@ -865,31 +902,45 @@ const Reports = () => {
 										</CardDescription>
 									</CardHeader>
 									<CardContent className="h-96">
-										<ResponsiveContainer width="100%" height="100%">
-											<ReBarChart
-												data={dailySpendingData}
-												margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-											>
-												<CartesianGrid strokeDasharray="3 3" vertical={false} />
-												<XAxis
-													dataKey="day"
-													label={{ value: 'Hari Bulan', position: 'insideBottom', offset: -5 }}
-												/>
-												<YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
-												<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
-												<Bar
-													dataKey="amount"
-													name="Pengeluaran Harian"
-													fill="url(#barGradient)"
-													radius={[4, 4, 0, 0]}
-													barSize={8}
-												/>
-											</ReBarChart>
-										</ResponsiveContainer>
+										{dailyLoading ? (
+											<div className="text-center text-gray-500">Loading...</div>
+										) : dailyError ? (
+											<div className="text-center text-red-500">{dailyError}</div>
+										) : (
+											<ResponsiveContainer width="100%" height="100%">
+												<ReBarChart
+													data={dailyData}
+													margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+												>
+													<CartesianGrid strokeDasharray="3 3" vertical={false} />
+													<XAxis
+														dataKey="day"
+														label={{ value: 'Hari Bulan', position: 'insideBottom', offset: -5 }}
+													/>
+													<YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+													<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
+													<Bar
+														dataKey="amount"
+														name="Pengeluaran Harian"
+														fill="url(#barGradient)"
+														radius={[4, 4, 0, 0]}
+														barSize={8}
+													/>
+													<defs>
+														<linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+															<stop offset="0%" stopColor="#2E7D32" />
+															<stop offset="100%" stopColor="#81C784" />
+														</linearGradient>
+													</defs>
+												</ReBarChart>
+											</ResponsiveContainer>
+										)}
 									</CardContent>
 								</Card>
 
+								{/* Card Analitik Harian */}
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+									{/* Hari Pengeluaran Tertinggi */}
 									<Card>
 										<CardHeader className="pb-2">
 											<CardTitle className="text-sm font-medium text-gray-500">
@@ -897,18 +948,48 @@ const Reports = () => {
 											</CardTitle>
 										</CardHeader>
 										<CardContent>
-											<div className="flex flex-col">
-												<span className="text-2xl font-bold text-gray-900">20 April</span>
-												<span className="text-3xl font-bold text-primary">
-													{formatCurrency(149_99)}
-												</span>
-												<p className="text-sm text-gray-500 mt-1">
-													Pengeluaran utama: Paket kursus online
-												</p>
-											</div>
+											{dailyLoading ? (
+												<span className="text-gray-400">Loading...</span>
+											) : dailyError ? (
+												<span className="text-red-500">{dailyError}</span>
+											) : dailyData.length === 0 ? (
+												<span className="text-gray-400">Tidak ada data</span>
+											) : (
+												(() => {
+													const max = dailyData.reduce(
+														(prev, curr) => (curr.amount > prev.amount ? curr : prev),
+														{ day: 0, amount: 0, categories: [] }
+													);
+													if (max.amount === 0)
+														return (
+															<span className="text-gray-400">Tidak ada pengeluaran bulan ini</span>
+														);
+													// Cari kategori dengan nominal terbesar pada hari tsb
+													let topCat = null;
+													if (max.categories && max.categories.length > 0) {
+														const maxCatAmount = Math.max(...max.categories.map((c) => c.amount));
+														topCat = max.categories.find((c) => c.amount === maxCatAmount);
+													}
+													return (
+														<div className="flex flex-col">
+															<span className="text-2xl font-bold text-gray-900">
+																{formatDayLabel(max.day, selectedMonth, selectedYear)}
+															</span>
+															<span className="text-3xl font-bold text-primary">
+																{formatCurrency(max.amount)}
+															</span>
+															{topCat && (
+																<span className="text-sm text-gray-600 mt-1">
+																	Pengeluaran Terbesar Kategori: <b>{topCat.category}</b>
+																</span>
+															)}
+														</div>
+													);
+												})()
+											)}
 										</CardContent>
 									</Card>
-
+									{/* Hari Pengeluaran Terendah */}
 									<Card>
 										<CardHeader className="pb-2">
 											<CardTitle className="text-sm font-medium text-gray-500">
@@ -916,18 +997,53 @@ const Reports = () => {
 											</CardTitle>
 										</CardHeader>
 										<CardContent>
-											<div className="flex flex-col">
-												<span className="text-2xl font-bold text-gray-900">3 April</span>
-												<span className="text-3xl font-bold text-green-600">
-													{formatCurrency(12_50)}
-												</span>
-												<p className="text-sm text-gray-500 mt-1">
-													Pengeluaran utama: Kopi dan makanan
-												</p>
-											</div>
+											{dailyLoading ? (
+												<span className="text-gray-400">Loading...</span>
+											) : dailyError ? (
+												<span className="text-red-500">{dailyError}</span>
+											) : dailyData.length === 0 ? (
+												<span className="text-gray-400">Tidak ada data</span>
+											) : (
+												(() => {
+													const min = dailyData
+														.filter((d) => d.amount > 0)
+														.reduce((prev, curr) => (curr.amount < prev.amount ? curr : prev), {
+															day: 0,
+															amount: Infinity,
+															categories: [],
+														});
+													if (!min || min.amount === Infinity)
+														return (
+															<span className="text-gray-400">
+																Tidak ada hari dengan pengeluaran
+															</span>
+														);
+													// Cari kategori dengan nominal terbesar pada hari tsb (atau terkecil, jika ingin kategori terkecil pada hari tsb)
+													let minCat = null;
+													if (min.categories && min.categories.length > 0) {
+														const maxCatAmount = Math.max(...min.categories.map((c) => c.amount));
+														minCat = min.categories.find((c) => c.amount === maxCatAmount);
+													}
+													return (
+														<div className="flex flex-col">
+															<span className="text-2xl font-bold text-gray-900">
+																{formatDayLabel(min.day, selectedMonth, selectedYear)}
+															</span>
+															<span className="text-3xl font-bold text-green-600">
+																{formatCurrency(min.amount)}
+															</span>
+															{minCat && (
+																<span className="text-sm text-gray-600 mt-1">
+																	Pengeluaran Terendah Kategori: <b>{minCat.category}</b>
+																</span>
+															)}
+														</div>
+													);
+												})()
+											)}
 										</CardContent>
 									</Card>
-
+									{/* Hari Tanpa Pengeluaran */}
 									<Card>
 										<CardHeader className="pb-2">
 											<CardTitle className="text-sm font-medium text-gray-500">
@@ -935,14 +1051,31 @@ const Reports = () => {
 											</CardTitle>
 										</CardHeader>
 										<CardContent>
-											<div className="flex flex-col">
-												<span className="text-3xl font-bold text-gray-900">4</span>
-												<p className="text-sm text-gray-500 mt-1">Hari dengan pengeluaran nol</p>
-												<div className="flex items-center text-green-600 text-sm mt-2">
-													<TrendingUp className="mr-1 h-4 w-4" />
-													<span>2 lebih dari bulan lalu</span>
-												</div>
-											</div>
+											{dailyLoading ? (
+												<span className="text-gray-400">Loading...</span>
+											) : dailyError ? (
+												<span className="text-red-500">{dailyError}</span>
+											) : dailyData.length === 0 ? (
+												<span className="text-gray-400">Tidak ada data</span>
+											) : (
+												(() => {
+													const zeroDays = dailyData.filter((d) => d.amount === 0).length;
+													return (
+														<div className="flex flex-col">
+															<span className="text-3xl font-bold text-gray-900">{zeroDays}</span>
+															<p className="text-sm text-gray-500 mt-1">
+																Hari dengan pengeluaran nol
+															</p>
+															{zeroDays > 0 && (
+																<div className="flex items-center text-green-600 text-sm mt-2">
+																	<TrendingUp className="mr-1 h-4 w-4" />
+																	<span>{zeroDays} hari tanpa pengeluaran</span>
+																</div>
+															)}
+														</div>
+													);
+												})()
+											)}
 										</CardContent>
 									</Card>
 								</div>
