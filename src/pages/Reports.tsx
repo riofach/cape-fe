@@ -68,12 +68,6 @@ const categoryData = [
 	{ name: 'Lainnya', value: 14_000_000, color: '#ffc658' },
 ];
 
-// Trend data for last 12 months
-const trendData = monthlyData.map((item) => ({
-	month: item.month,
-	amount: item.amount,
-}));
-
 // Daily spending data for the current month
 const dailySpendingData = Array.from({ length: 30 }, (_, i) => ({
 	day: i + 1,
@@ -117,6 +111,14 @@ const monthShortNames = [
 	'Nov',
 	'Dec',
 ];
+
+// Helper untuk format singkat rupiah
+const formatShortRupiah = (value: number) => {
+	if (value >= 1_000_000_000) return `Rp${(value / 1_000_000_000).toFixed(1)}M`;
+	if (value >= 1_000_000) return `Rp${(value / 1_000).toLocaleString('id-ID')}K`;
+	if (value >= 1_000) return `Rp${(value / 1_000).toLocaleString('id-ID')}K`;
+	return `Rp${value}`;
+};
 
 type ReportMonthly = {
 	month: number;
@@ -178,6 +180,7 @@ const Reports = () => {
 	);
 	const [userRole, setUserRole] = useState<string | null>(null);
 	const [forbidden, setForbidden] = useState(false);
+	const [categoryReport, setCategoryReport] = useState<{ name: string; amount: number }[]>([]);
 	const navigate = useNavigate();
 
 	const fetchReport = async () => {
@@ -226,11 +229,42 @@ const Reports = () => {
 		}
 	};
 
+	const fetchCategoryReport = async () => {
+		setLoading(true);
+		setError(null);
+		try {
+			const res = await apiRequest(
+				`/expenses/report/monthly?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
+				{},
+				true
+			);
+			const categories = (res.data.categories || []).map(
+				(cat: { name?: string; category?: string; amount: number }) => ({
+					name: cat.name || cat.category,
+					amount: Number(cat.amount ?? 0),
+				})
+			);
+			setCategoryReport(categories);
+		} catch (err) {
+			setCategoryReport([]);
+			setError('Gagal memuat data kategori');
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	useEffect(() => {
 		fetchReport();
 		fetchYearly();
 		// eslint-disable-next-line
 	}, [selectedMonth, selectedYear]);
+
+	useEffect(() => {
+		if (selectedTab === 'categories') {
+			fetchCategoryReport();
+		}
+		// eslint-disable-next-line
+	}, [selectedTab, selectedMonth, selectedYear]);
 
 	useEffect(() => {
 		// Ambil role user dari localStorage (sinkron dengan backend)
@@ -264,6 +298,13 @@ const Reports = () => {
 		.sort((a, b) => b.amount - a.amount)
 		.slice(0, 6)
 		.map((cat, idx) => ({ ...cat, color: categoryColors[idx % categoryColors.length] }));
+
+	// Ubah bagian tab Tren agar LineChart dan AreaChart menggunakan yearlyData
+	// Mapping yearlyData ke format yang sesuai untuk chart
+	const trendChartData = yearlyData.map((item) => ({
+		month: monthShortNames[(item.month - 1) % 12],
+		amount: item.total,
+	}));
 
 	return (
 		<DashboardLayout>
@@ -485,9 +526,7 @@ const Reports = () => {
 															dataKey="month"
 															tickFormatter={(m) => monthShortNames[(Number(m) - 1) % 12]}
 														/>
-														<YAxis
-															tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`}
-														/>
+														<YAxis tickFormatter={formatShortRupiah} />
 														<Tooltip content={CustomBarTooltip} />
 														<Legend />
 														<Bar
@@ -590,6 +629,8 @@ const Reports = () => {
 
 							{/* Categories Tab */}
 							<TabsContent value="categories" className="space-y-6">
+								{/* Tambahkan log untuk debug state categoryReport */}
+								{/* {console.log('Rendering Categories Tab, categoryReport:', categoryReport)} */}
 								<Card>
 									<CardHeader>
 										<CardTitle>Analisis Kategori</CardTitle>
@@ -598,28 +639,43 @@ const Reports = () => {
 										</CardDescription>
 									</CardHeader>
 									<CardContent className="h-96">
-										<ResponsiveContainer width="100%" height="100%">
-											<ReBarChart
-												data={categoryData}
-												layout="vertical"
-												margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
-											>
-												<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-												<XAxis
-													type="number"
-													tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`}
-												/>
-												<YAxis type="category" dataKey="name" width={100} />
-												<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
-												<Bar
-													dataKey="value"
-													name="Jumlah"
-													fill="url(#barGradient)"
-													radius={[0, 4, 4, 0]}
-													barSize={20}
-												/>
-											</ReBarChart>
-										</ResponsiveContainer>
+										{loading ? (
+											<div className="text-center text-gray-500">Loading...</div>
+										) : error ? (
+											<div className="text-center text-red-500">{error}</div>
+										) : categoryReport.length === 0 ? (
+											<div className="text-center text-gray-400">Tidak ada data kategori</div>
+										) : (
+											<ResponsiveContainer width="100%" height="100%">
+												<ReBarChart
+													data={categoryReport}
+													layout="vertical"
+													margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+												>
+													<CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+													<XAxis
+														type="number"
+														tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`}
+													/>
+													<YAxis type="category" dataKey="name" width={100} interval={0} />
+													<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
+													<Bar
+														dataKey="amount"
+														name="Jumlah"
+														// fill="#2E7D32"
+														fill="url(#barGradient)"
+														radius={[0, 4, 4, 0]}
+														barSize={20}
+													/>
+													<defs>
+														<linearGradient id="barGradient" x1="1" y1="0" x2="0" y2="0">
+															<stop offset="0%" stopColor="#2E7D32" />
+															<stop offset="100%" stopColor="#81C784" />
+														</linearGradient>
+													</defs>
+												</ReBarChart>
+											</ResponsiveContainer>
+										)}
 									</CardContent>
 								</Card>
 
@@ -630,27 +686,38 @@ const Reports = () => {
 											<CardDescription>Perbandingan persentase pengeluaran Anda</CardDescription>
 										</CardHeader>
 										<CardContent className="h-80">
-											<ResponsiveContainer width="100%" height="100%">
-												<RePieChart>
-													<Pie
-														data={categoryData}
-														cx="50%"
-														cy="50%"
-														innerRadius={0}
-														outerRadius={90}
-														paddingAngle={1}
-														dataKey="value"
-														label={({ name, percent }) =>
-															`${name} (${(percent * 100).toFixed(0)}%)`
-														}
-													>
-														{categoryData.map((entry, index) => (
-															<Cell key={`cell-${index}`} fill={entry.color} />
-														))}
-													</Pie>
-													<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
-												</RePieChart>
-											</ResponsiveContainer>
+											{loading ? (
+												<div className="text-center text-gray-500">Loading...</div>
+											) : error ? (
+												<div className="text-center text-red-500">{error}</div>
+											) : categoryReport.length === 0 ? (
+												<div className="text-center text-gray-400">Tidak ada data kategori</div>
+											) : (
+												<ResponsiveContainer width="100%" height="100%">
+													<RePieChart>
+														<Pie
+															data={categoryReport}
+															cx="50%"
+															cy="50%"
+															innerRadius={0}
+															outerRadius={90}
+															paddingAngle={1}
+															dataKey="amount"
+															label={({ name, percent }) =>
+																`${name} (${(percent * 100).toFixed(0)}%)`
+															}
+														>
+															{categoryReport.map((entry, index) => (
+																<Cell
+																	key={`cell-${index}`}
+																	fill={categoryColors[index % categoryColors.length]}
+																/>
+															))}
+														</Pie>
+														<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
+													</RePieChart>
+												</ResponsiveContainer>
+											)}
 										</CardContent>
 									</Card>
 
@@ -660,37 +727,58 @@ const Reports = () => {
 											<CardDescription>Uang yang dikeluarkan berdasarkan kategori</CardDescription>
 										</CardHeader>
 										<CardContent>
-											<div className="space-y-4">
-												{categoryData.map((category, index) => (
-													<div key={index} className="space-y-2">
-														<div className="flex justify-between items-center">
-															<div className="flex items-center">
-																<div
-																	className="w-3 h-3 rounded-full mr-2"
-																	style={{ backgroundColor: category.color }}
-																/>
-																<span className="font-medium">{category.name}</span>
+											{loading ? (
+												<div className="text-center text-gray-500">Loading...</div>
+											) : error ? (
+												<div className="text-center text-red-500">{error}</div>
+											) : categoryReport.length === 0 ? (
+												<div className="text-center text-gray-400">Tidak ada data kategori</div>
+											) : (
+												<div className="space-y-4">
+													{categoryReport.map((category, index) => (
+														<div key={index} className="space-y-2">
+															<div className="flex justify-between items-center">
+																<div className="flex items-center">
+																	<div
+																		className="w-3 h-3 rounded-full mr-2"
+																		style={{
+																			backgroundColor:
+																				categoryColors[index % categoryColors.length],
+																		}}
+																	/>
+																	<span className="font-medium">{category.name}</span>
+																</div>
+																<span className="font-semibold">
+																	{`Rp ${(category.amount ?? 0).toLocaleString('id-ID')}`}
+																</span>
 															</div>
-															<span className="font-semibold">
-																{formatCurrency(category.value)}
-															</span>
+															<div className="w-full bg-gray-200 rounded-full h-2.5">
+																<div
+																	className="h-2.5 rounded-full"
+																	style={{
+																		width: `${
+																			// Pastikan total amount > 0 sebelum dibagi
+																			(categoryReport.reduce(
+																				(sum, cat) => sum + (cat.amount ?? 0),
+																				0
+																			) > 0
+																				? ((category.amount ?? 0) /
+																						categoryReport.reduce(
+																							(sum, cat) => sum + (cat.amount ?? 0),
+																							1
+																						)) *
+																				  100
+																				: 0
+																			).toFixed(2)
+																		}%`,
+																		backgroundColor: categoryColors[index % categoryColors.length],
+																	}}
+																></div>
+															</div>
 														</div>
-														<div className="w-full bg-gray-200 rounded-full h-2.5">
-															<div
-																className="h-2.5 rounded-full"
-																style={{
-																	width: `${
-																		(category.value /
-																			categoryData.reduce((sum, cat) => sum + cat.value, 0)) *
-																		100
-																	}%`,
-																	backgroundColor: category.color,
-																}}
-															></div>
-														</div>
-													</div>
-												))}
-											</div>
+													))}
+												</div>
+											)}
 										</CardContent>
 									</Card>
 								</div>
@@ -708,12 +796,12 @@ const Reports = () => {
 									<CardContent className="h-80">
 										<ResponsiveContainer width="100%" height="100%">
 											<LineChart
-												data={trendData}
+												data={trendChartData}
 												margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
 											>
 												<CartesianGrid strokeDasharray="3 3" vertical={false} />
 												<XAxis dataKey="month" />
-												<YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+												<YAxis tickFormatter={formatShortRupiah} />
 												<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
 												<Legend />
 												<Line
@@ -740,12 +828,12 @@ const Reports = () => {
 									<CardContent className="h-80">
 										<ResponsiveContainer width="100%" height="100%">
 											<AreaChart
-												data={trendData}
+												data={trendChartData}
 												margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
 											>
 												<CartesianGrid strokeDasharray="3 3" vertical={false} />
 												<XAxis dataKey="month" />
-												<YAxis tickFormatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+												<YAxis tickFormatter={formatShortRupiah} />
 												<Tooltip formatter={(value) => [`Rp ${value}`, 'Amount']} />
 												<Area
 													type="monotone"

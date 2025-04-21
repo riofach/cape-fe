@@ -41,6 +41,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from '@/components/ui/pagination';
 
 // Tipe data Income sesuai backend
 export type Income = {
@@ -91,6 +99,8 @@ const IncomePage = () => {
 	const [showCustomInputAdd, setShowCustomInputAdd] = useState(false);
 	const [customCategoryEdit, setCustomCategoryEdit] = useState('');
 	const [showCustomInputEdit, setShowCustomInputEdit] = useState(false);
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 25;
 
 	// Template kategori default income
 	const defaultIncomeCategories = [
@@ -169,6 +179,30 @@ const IncomePage = () => {
 		}
 		return matchesSearch && matchesDate;
 	});
+
+	// Pagination logic
+	const totalPages = Math.ceil(filteredIncomes.length / itemsPerPage);
+	const startIndex = (currentPage - 1) * itemsPerPage;
+	const endIndex = startIndex + itemsPerPage;
+	const currentItems = filteredIncomes.slice(startIndex, endIndex);
+
+	// Reset currentPage ke 1 jika filter/search berubah
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [searchTerm, categoryFilter, startDate, endDate]);
+
+	// Helper untuk page number
+	const getPageNumbers = () => {
+		const pages = [];
+		for (let i = 1; i <= totalPages; i++) {
+			if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+				pages.push(i);
+			} else if (i === currentPage - 2 || i === currentPage + 2) {
+				pages.push('...');
+			}
+		}
+		return pages.filter((page, index, array) => array.indexOf(page) === index);
+	};
 
 	// Summary
 	const totalIncome = filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
@@ -570,7 +604,7 @@ const IncomePage = () => {
 							<CardContent>
 								<div className="space-y-4">
 									<div className="grid grid-cols-1 gap-4">
-										{filteredIncomes.map((income) => (
+										{currentItems.map((income) => (
 											<div
 												key={income._id}
 												className="flex items-center justify-between rounded-lg border p-4"
@@ -606,6 +640,48 @@ const IncomePage = () => {
 											</div>
 										))}
 									</div>
+									{/* Pagination */}
+									{totalPages > 1 && (
+										<Pagination>
+											<PaginationContent>
+												<PaginationItem>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+														disabled={currentPage === 1}
+													>
+														Previous
+													</Button>
+												</PaginationItem>
+												{getPageNumbers().map((page, index) => (
+													<PaginationItem key={index}>
+														{page === '...' ? (
+															<span className="px-4 py-2">...</span>
+														) : (
+															<Button
+																variant={currentPage === page ? 'default' : 'outline'}
+																size="sm"
+																onClick={() => setCurrentPage(Number(page))}
+															>
+																{page}
+															</Button>
+														)}
+													</PaginationItem>
+												))}
+												<PaginationItem>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+														disabled={currentPage === totalPages}
+													>
+														Next
+													</Button>
+												</PaginationItem>
+											</PaginationContent>
+										</Pagination>
+									)}
 								</div>
 							</CardContent>
 						</Card>

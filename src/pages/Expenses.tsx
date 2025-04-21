@@ -53,6 +53,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { apiRequest } from '@/utils/api';
 import { id as localeId } from 'date-fns/locale';
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from '@/components/ui/pagination';
 
 type Expense = {
 	_id: string;
@@ -103,6 +111,8 @@ const Expenses = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [userCategories, setUserCategories] = useState<string[]>([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 25;
 
 	// Ambil kategori unik user dari backend
 	const fetchCategories = useCallback(async () => {
@@ -147,6 +157,30 @@ const Expenses = () => {
 		const matchesSearch = expense.description?.toLowerCase().includes(searchTerm.toLowerCase());
 		return matchesSearch;
 	});
+
+	// Pagination logic
+	const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+	const startIndex = (currentPage - 1) * itemsPerPage;
+	const endIndex = startIndex + itemsPerPage;
+	const currentItems = filteredExpenses.slice(startIndex, endIndex);
+
+	// Reset currentPage ke 1 jika filter/search berubah
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [searchTerm, categoryFilter, startDate, endDate]);
+
+	// Helper untuk page number
+	const getPageNumbers = () => {
+		const pages = [];
+		for (let i = 1; i <= totalPages; i++) {
+			if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+				pages.push(i);
+			} else if (i === currentPage - 2 || i === currentPage + 2) {
+				pages.push('...');
+			}
+		}
+		return pages.filter((page, index, array) => array.indexOf(page) === index);
+	};
 
 	// Untuk select kategori (tambah/edit), hanya tampilkan jika userCategories sudah ada
 	const hasCategoryList = userCategories.length > 0;
@@ -419,7 +453,7 @@ const Expenses = () => {
 												</TableCell>
 											</TableRow>
 										) : (
-											filteredExpenses.map((expense) => (
+											currentItems.map((expense) => (
 												<TableRow key={expense._id}>
 													<TableCell>
 														{expense.expenseDate
@@ -458,6 +492,48 @@ const Expenses = () => {
 									</TableBody>
 								</Table>
 							</div>
+							{/* Pagination */}
+							{totalPages > 1 && (
+								<Pagination>
+									<PaginationContent>
+										<PaginationItem>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+												disabled={currentPage === 1}
+											>
+												Previous
+											</Button>
+										</PaginationItem>
+										{getPageNumbers().map((page, index) => (
+											<PaginationItem key={index}>
+												{page === '...' ? (
+													<span className="px-4 py-2">...</span>
+												) : (
+													<Button
+														variant={currentPage === page ? 'default' : 'outline'}
+														size="sm"
+														onClick={() => setCurrentPage(Number(page))}
+													>
+														{page}
+													</Button>
+												)}
+											</PaginationItem>
+										))}
+										<PaginationItem>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+												disabled={currentPage === totalPages}
+											>
+												Next
+											</Button>
+										</PaginationItem>
+									</PaginationContent>
+								</Pagination>
+							)}
 						</CardContent>
 					</Card>
 					{/* Add Expense Dialog */}
