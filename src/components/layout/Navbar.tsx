@@ -86,13 +86,6 @@ const Navbar = () => {
 							Home
 						</Link>
 						<Link
-							to="/features"
-							className="block py-2 text-gray-700 hover:text-primary font-medium"
-							onClick={() => setIsMenuOpen(false)}
-						>
-							Features
-						</Link>
-						<Link
 							to="/pricing"
 							className="block py-2 text-gray-700 hover:text-primary font-medium"
 							onClick={() => setIsMenuOpen(false)}
