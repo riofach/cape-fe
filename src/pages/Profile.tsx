@@ -44,6 +44,9 @@ const Profile = () => {
 	const [changeSuccess, setChangeSuccess] = useState<string | null>(null);
 	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 	const [showNewPassword, setShowNewPassword] = useState(false);
+	const [subscription, setSubscription] = useState<{ status: string; endDate?: string } | null>(
+		null
+	);
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -59,7 +62,16 @@ const Profile = () => {
 				setLoading(false);
 			}
 		};
+		const fetchSubscription = async () => {
+			try {
+				const res = await apiRequest('/auth/subscription/status', {}, true);
+				setSubscription(res);
+			} catch {
+				setSubscription(null);
+			}
+		};
 		fetchProfile();
+		fetchSubscription();
 	}, []);
 
 	const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -177,22 +189,38 @@ const Profile = () => {
 							<div>
 								<h3 className="font-medium">Current Plan</h3>
 								<p className="text-sm text-muted-foreground">
-									{userData?.role === 'pro'
+									{subscription?.status === 'pro'
 										? 'Pro Plan'
 										: userData?.role === 'admin'
 										? 'Admin'
 										: 'Free Plan'}
 								</p>
 							</div>
-							<div className="bg-primary px-3 py-1 rounded-full text-white text-xs">Active</div>
+							<div
+								className={`px-3 py-1 rounded-full text-xs ${
+									subscription?.status === 'pro'
+										? 'bg-[#8B5CF6] text-white'
+										: 'bg-gray-300 text-gray-700'
+								}`}
+							>
+								{subscription?.status === 'pro' ? 'Active' : 'Free'}
+							</div>
 						</div>
-
 						<div className="flex justify-between items-center">
 							<div>
 								<h3 className="font-medium">Next Billing Date</h3>
-								<p className="text-sm text-muted-foreground">-</p>
+								<p className="text-sm text-muted-foreground">
+									{subscription?.status === 'pro' &&
+									subscription.endDate &&
+									!isNaN(Date.parse(subscription.endDate))
+										? new Date(subscription.endDate).toLocaleDateString('id-ID', {
+												year: 'numeric',
+												month: 'long',
+												day: 'numeric',
+										  })
+										: '-'}
+								</p>
 							</div>
-							{/* arahkan ke page */}
 							<Button variant="outline" size="sm">
 								Manage Subscription
 							</Button>

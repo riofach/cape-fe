@@ -26,6 +26,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 	const location = useLocation();
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [user, setUser] = useState<{ username: string; role: string } | null>(null);
+	const [subscription, setSubscription] = useState<{ status: string; endDate?: string } | null>(
+		null
+	);
 
 	useEffect(() => {
 		// Ambil data user dari API profile
@@ -37,7 +40,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 				setUser(null);
 			}
 		};
+		const fetchSubscription = async () => {
+			try {
+				const res = await apiRequest('/auth/subscription/status', {}, true);
+				setSubscription(res);
+			} catch {
+				setSubscription(null);
+			}
+		};
 		fetchProfile();
+		fetchSubscription();
 	}, []);
 
 	const navigation = [
@@ -76,12 +88,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 			icon: FileText,
 			href: '/help',
 			current: location.pathname === '/help',
-		},
-		{
-			name: 'Admin',
-			icon: UserCog,
-			href: '/admin',
-			current: location.pathname === '/admin',
 		},
 	];
 
@@ -136,6 +142,24 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 												{item.name}
 											</Link>
 										))}
+										{user && user.role === 'admin' && (
+											<Link
+												key="Admin"
+												to="/admin"
+												className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+													location.pathname === '/admin'
+														? 'bg-primary text-white'
+														: 'text-gray-700 hover:bg-gray-100'
+												}`}
+											>
+												<UserCog
+													className={`mr-3 h-5 w-5 ${
+														location.pathname === '/admin' ? 'text-white' : 'text-gray-500'
+													}`}
+												/>
+												Admin
+											</Link>
+										)}
 									</nav>
 
 									{/* Mobile Sidebar Footer */}
@@ -181,7 +205,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 											<Badge className="absolute -top-2 -right-2 bg-red-500 text-white px-2 py-0.5 text-[10px]">
 												ADMIN
 											</Badge>
-										) : user.role === 'pro' ? (
+										) : subscription?.status === 'pro' ? (
 											<Badge className="absolute -top-2 -right-2 bg-[#8B5CF6] hover:bg-[#7C3AED] px-2 py-0.5 text-[10px]">
 												PRO
 											</Badge>
@@ -214,6 +238,24 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 									{item.name}
 								</Link>
 							))}
+							{user && user.role === 'admin' && (
+								<Link
+									key="Admin"
+									to="/admin"
+									className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+										location.pathname === '/admin'
+											? 'bg-primary text-white'
+											: 'text-gray-700 hover:bg-gray-100'
+									}`}
+								>
+									<UserCog
+										className={`mr-3 h-5 w-5 ${
+											location.pathname === '/admin' ? 'text-white' : 'text-gray-500'
+										}`}
+									/>
+									Admin
+								</Link>
+							)}
 						</nav>
 
 						{/* Sidebar Footer */}

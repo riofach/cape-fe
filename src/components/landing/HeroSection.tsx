@@ -27,11 +27,6 @@ const HeroSection = () => {
 									<ArrowRight className="ml-2 h-5 w-5" />
 								</Button>
 							</Link>
-							<Link to="/features">
-								<Button variant="outline" className="py-6 px-8 text-base">
-									Learn More
-								</Button>
-							</Link>
 						</div>
 					</div>
 					<ExpensePreviewCard />

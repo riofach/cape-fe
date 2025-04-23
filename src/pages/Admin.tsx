@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
@@ -68,29 +69,182 @@ const mockHelpRequests: HelpRequest[] = [
 	},
 ];
 
-const Admin = () => {
-	const [users, setUsers] = useState(mockUsers);
-	const [payments, setPayments] = useState(mockPaymentProofs);
-	const [helpRequests, setHelpRequests] = useState(mockHelpRequests);
+type UserApi = { _id: string; username: string; email: string; role: UserRole };
 
-	const handleRoleChange = (userId: number, newRole: UserRole) => {
-		setUsers(users.map((user) => (user.id === userId ? { ...user, role: newRole } : user)));
-		toast({
-			title: 'Role Updated',
-			description: 'User role has been successfully updated.',
-		});
+type PaymentProof = {
+	id: string;
+	userName: string;
+	email: string;
+	date: string;
+	amount: number;
+	status: PaymentStatus;
+	proofUrl: string;
+};
+
+const Admin = () => {
+	const [users, setUsers] = useState([]);
+	const [loadingUsers, setLoadingUsers] = useState(true);
+	const [userError, setUserError] = useState<string | null>(null);
+	const [payments, setPayments] = useState<PaymentProof[]>([]);
+	const [loadingPayments, setLoadingPayments] = useState(true);
+	const [paymentError, setPaymentError] = useState<string | null>(null);
+	const [helpRequests, setHelpRequests] = useState(mockHelpRequests);
+	const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+	const navigate = useNavigate();
+
+	const fetchUsers = useCallback(async () => {
+		setLoadingUsers(true);
+		setUserError(null);
+		try {
+			const token = localStorage.getItem('token');
+			const res = await fetch('/api/auth/users', {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || 'Gagal mengambil data user');
+			setUsers(
+				data.data.map((u: UserApi) => ({
+					id: u._id,
+					name: u.username,
+					email: u.email,
+					role: u.role,
+				}))
+			);
+		} catch (err: unknown) {
+			let errorMsg = 'Terjadi kesalahan';
+			if (err && typeof err === 'object' && 'message' in err) {
+				errorMsg = (err as { message?: string }).message || errorMsg;
+			}
+			setUserError(errorMsg);
+		} finally {
+			setLoadingUsers(false);
+		}
+	}, []);
+
+	const fetchPayments = useCallback(async () => {
+		setLoadingPayments(true);
+		setPaymentError(null);
+		try {
+			const token = localStorage.getItem('token');
+			const res = await fetch('/api/payments/all', {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || 'Gagal mengambil data pembayaran');
+			setPayments(data.data);
+		} catch (err: unknown) {
+			let errorMsg = 'Terjadi kesalahan';
+			if (err && typeof err === 'object' && 'message' in err) {
+				errorMsg = (err as { message?: string }).message || errorMsg;
+			}
+			setPaymentError(errorMsg);
+		} finally {
+			setLoadingPayments(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchUsers();
+	}, [fetchUsers]);
+
+	useEffect(() => {
+		fetchPayments();
+	}, [fetchPayments]);
+
+	useEffect(() => {
+		// Cek role user dari localStorage/token atau fetch profile
+		const checkRole = async () => {
+			const token = localStorage.getItem('token');
+			if (!token) {
+				setIsAdmin(false);
+				navigate('/');
+				return;
+			}
+			try {
+				const res = await fetch('/api/auth/profile', {
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				const data = await res.json();
+				if (res.ok && data?.data?.role === 'admin') {
+					setIsAdmin(true);
+				} else {
+					setIsAdmin(false);
+					navigate('/');
+				}
+			} catch {
+				setIsAdmin(false);
+				navigate('/');
+			}
+		};
+		checkRole();
+	}, [navigate]);
+
+	if (isAdmin === null) return <div>Loading...</div>;
+	if (!isAdmin) return null;
+
+	const handleRoleChange = async (userId: string, newRole: UserRole) => {
+		try {
+			const token = localStorage.getItem('token');
+			const res = await fetch(`/api/auth/users/${userId}/role`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ role: newRole }),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || 'Gagal update role user');
+			setUsers((prev) =>
+				prev.map((user) => (user.id === userId ? { ...user, role: newRole } : user))
+			);
+			toast({
+				title: 'Role Updated',
+				description: 'User role has been successfully updated.',
+			});
+		} catch (err: unknown) {
+			let errorMsg = 'Terjadi kesalahan';
+			if (err && typeof err === 'object' && 'message' in err) {
+				errorMsg = (err as { message?: string }).message || errorMsg;
+			}
+			toast({
+				title: 'Gagal update role user',
+				description: errorMsg,
+				variant: 'destructive',
+			});
+		}
 	};
 
-	const handlePaymentStatus = (paymentId: number, newStatus: PaymentStatus) => {
-		setPayments(
-			payments.map((payment) =>
-				payment.id === paymentId ? { ...payment, status: newStatus } : payment
-			)
-		);
-		toast({
-			title: 'Payment Status Updated',
-			description: `Payment has been ${newStatus}.`,
-		});
+	const handlePaymentStatus = async (paymentId: string, newStatus: PaymentStatus) => {
+		try {
+			const token = localStorage.getItem('token');
+			const res = await fetch('/api/payments/verify', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ paymentId, status: newStatus }),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || 'Gagal update status pembayaran');
+			toast({
+				title: 'Payment Status Updated',
+				description: `Payment has been ${newStatus}.`,
+			});
+			// Jika approved, refresh data agar role user juga terupdate
+			fetchPayments();
+		} catch (err: unknown) {
+			let errorMsg = 'Terjadi kesalahan';
+			if (err && typeof err === 'object' && 'message' in err) {
+				errorMsg = (err as { message?: string }).message || errorMsg;
+			}
+			toast({
+				title: 'Gagal update status pembayaran',
+				description: errorMsg,
+				variant: 'destructive',
+			});
+		}
 	};
 
 	return (
@@ -106,11 +260,23 @@ const Admin = () => {
 					</TabsList>
 
 					<TabsContent value="users" className="mt-4">
-						<UserManagementTab users={users} onRoleChange={handleRoleChange} />
+						{loadingUsers ? (
+							<div>Loading users...</div>
+						) : userError ? (
+							<div className="text-red-600">{userError}</div>
+						) : (
+							<UserManagementTab users={users} onRoleChange={handleRoleChange} />
+						)}
 					</TabsContent>
 
 					<TabsContent value="payments" className="mt-4">
-						<PaymentProofTab payments={payments} onStatusChange={handlePaymentStatus} />
+						{loadingPayments ? (
+							<div>Loading payments...</div>
+						) : paymentError ? (
+							<div className="text-red-600">{paymentError}</div>
+						) : (
+							<PaymentProofTab payments={payments} onStatusChange={handlePaymentStatus} />
+						)}
 					</TabsContent>
 
 					<TabsContent value="help" className="mt-4">

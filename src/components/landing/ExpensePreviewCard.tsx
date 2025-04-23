@@ -5,7 +5,9 @@ const ExpensePreviewCard = () => {
 		<div className="flex justify-center lg:justify-end">
 			<div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
 				<div className="p-6 bg-primary-gradient text-white">
-					<h2 className="text-xl font-semibold mb-4">April 2025</h2>
+					<h2 className="text-xl font-semibold mb-4">
+						{new Date().toLocaleString('default', { month: 'long' })} {new Date().getFullYear()}
+					</h2>
 					<div className="flex justify-between items-center">
 						<div>
 							<p className="text-white/80 text-sm">Total Expenses</p>
