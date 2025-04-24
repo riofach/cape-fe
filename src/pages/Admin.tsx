@@ -7,6 +7,26 @@ import UserManagementTab from '@/components/admin/UserManagementTab';
 import PaymentProofTab from '@/components/admin/PaymentProofTab';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+	AlertDialog,
+	AlertDialogTrigger,
+	AlertDialogContent,
+	AlertDialogHeader,
+	AlertDialogFooter,
+	AlertDialogTitle,
+	AlertDialogDescription,
+	AlertDialogAction,
+	AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import { Search, Filter } from 'lucide-react';
 
 // Define types to match component expectations
 type UserRole = 'free' | 'pro' | 'admin';
@@ -19,55 +39,14 @@ const mockUsers = [
 	{ id: 3, name: 'Admin User', email: 'admin@example.com', role: 'admin' as UserRole },
 ];
 
-// Mock data for payment proofs with proper typing
-const mockPaymentProofs = [
-	{
-		id: 1,
-		userName: 'John Doe',
-		email: 'john@example.com',
-		date: '2025-04-16',
-		amount: 10000,
-		status: 'pending' as PaymentStatus,
-		proofUrl: 'https://example.com/proof1.jpg',
-	},
-	{
-		id: 2,
-		userName: 'Jane Smith',
-		email: 'jane@example.com',
-		date: '2025-04-15',
-		amount: 10000,
-		status: 'approved' as PaymentStatus,
-		proofUrl: 'https://example.com/proof2.jpg',
-	},
-];
-
 type HelpRequest = {
-	id: number;
+	id: string;
 	name: string;
 	email: string;
 	message: string;
 	date: string;
-	status: 'pending' | 'resolved';
+	status: string;
 };
-
-const mockHelpRequests: HelpRequest[] = [
-	{
-		id: 1,
-		name: 'John Doe',
-		email: 'john@example.com',
-		message: 'I need help with expense tracking',
-		date: '2025-04-20',
-		status: 'pending',
-	},
-	{
-		id: 2,
-		name: 'Jane Smith',
-		email: 'jane@example.com',
-		message: 'Having issues with the income page',
-		date: '2025-04-19',
-		status: 'resolved',
-	},
-];
 
 type UserApi = { _id: string; username: string; email: string; role: UserRole };
 
@@ -81,6 +60,15 @@ type PaymentProof = {
 	proofUrl: string;
 };
 
+// Tambahkan tipe untuk response support dari backend
+type SupportApi = {
+	_id: string;
+	userId?: { username?: string; email?: string } | null;
+	message: string;
+	createdAt?: string;
+	status?: string;
+};
+
 const Admin = () => {
 	const [users, setUsers] = useState([]);
 	const [loadingUsers, setLoadingUsers] = useState(true);
@@ -88,8 +76,15 @@ const Admin = () => {
 	const [payments, setPayments] = useState<PaymentProof[]>([]);
 	const [loadingPayments, setLoadingPayments] = useState(true);
 	const [paymentError, setPaymentError] = useState<string | null>(null);
-	const [helpRequests, setHelpRequests] = useState(mockHelpRequests);
+	const [helpRequests, setHelpRequests] = useState<HelpRequest[]>([]);
+	const [loadingHelp, setLoadingHelp] = useState(true);
+	const [helpError, setHelpError] = useState<string | null>(null);
 	const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+	const [updatingId, setUpdatingId] = useState<string | null>(null);
+	const [dialogOpen, setDialogOpen] = useState<string | null>(null);
+	const [nextStatus, setNextStatus] = useState<'pending' | 'resolved'>('resolved');
+	const [helpStatus, setHelpStatus] = useState<string>('all');
+	const [helpSearch, setHelpSearch] = useState<string>('');
 	const navigate = useNavigate();
 
 	const fetchUsers = useCallback(async () => {
@@ -143,6 +138,49 @@ const Admin = () => {
 		}
 	}, []);
 
+	// Fetch help requests
+	const fetchHelpRequests = useCallback(async () => {
+		setLoadingHelp(true);
+		setHelpError(null);
+		try {
+			const token = localStorage.getItem('token');
+			let url = '/api/support';
+			const params = [];
+			if (helpStatus !== 'all') params.push(`status=${helpStatus}`);
+			if (helpSearch) params.push(`q=${encodeURIComponent(helpSearch)}`);
+			if (params.length > 0) url += '?' + params.join('&');
+			const res = await fetch(url, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || 'Gagal mengambil data bantuan');
+			setHelpRequests(
+				(data.data as SupportApi[]).map((req) => ({
+					id: req._id,
+					name: req.userId?.username || 'Unknown',
+					email: req.userId?.email || '-',
+					message: req.message,
+					date: req.createdAt
+						? new Date(req.createdAt).toLocaleDateString('id-ID', {
+								year: 'numeric',
+								month: 'short',
+								day: 'numeric',
+						  })
+						: '-',
+					status: req.status || 'pending',
+				}))
+			);
+		} catch (err: unknown) {
+			let errorMsg = 'Terjadi kesalahan';
+			if (err && typeof err === 'object' && 'message' in err) {
+				errorMsg = (err as { message?: string }).message || errorMsg;
+			}
+			setHelpError(errorMsg);
+		} finally {
+			setLoadingHelp(false);
+		}
+	}, [helpStatus, helpSearch]);
+
 	useEffect(() => {
 		fetchUsers();
 	}, [fetchUsers]);
@@ -150,6 +188,10 @@ const Admin = () => {
 	useEffect(() => {
 		fetchPayments();
 	}, [fetchPayments]);
+
+	useEffect(() => {
+		fetchHelpRequests();
+	}, [fetchHelpRequests]);
 
 	useEffect(() => {
 		// Cek role user dari localStorage/token atau fetch profile
@@ -247,6 +289,41 @@ const Admin = () => {
 		}
 	};
 
+	const handleToggleStatus = async (id: string, status: string) => {
+		setUpdatingId(id);
+		try {
+			const token = localStorage.getItem('token');
+			const res = await fetch(`/api/support/${id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ status }),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || 'Gagal update status bantuan');
+			toast({
+				title: 'Status Updated',
+				description: 'Status bantuan berhasil diubah.',
+			});
+			fetchHelpRequests();
+		} catch (err: unknown) {
+			let errorMsg = 'Terjadi kesalahan';
+			if (err && typeof err === 'object' && 'message' in err) {
+				errorMsg = (err as { message?: string }).message || errorMsg;
+			}
+			toast({
+				title: 'Gagal update status bantuan',
+				description: errorMsg,
+				variant: 'destructive',
+			});
+		} finally {
+			setUpdatingId(null);
+			setDialogOpen(null);
+		}
+	};
+
 	return (
 		<DashboardLayout>
 			<div className="space-y-6">
@@ -284,36 +361,110 @@ const Admin = () => {
 							<CardHeader>
 								<CardTitle>Help & Support Requests</CardTitle>
 								<CardDescription>View and manage user help requests</CardDescription>
+								<div className="flex gap-4 items-center mt-4">
+									<div className="relative flex-1">
+										<Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+										<Input
+											placeholder="Search help requests..."
+											value={helpSearch}
+											onChange={(e) => setHelpSearch(e.target.value)}
+											className="pl-9"
+										/>
+									</div>
+									<div className="flex items-center gap-2">
+										<Filter className="h-4 w-4 text-gray-500" />
+										<Select value={helpStatus} onValueChange={setHelpStatus}>
+											<SelectTrigger className="w-32">
+												<SelectValue placeholder="Filter status" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="all">All Status</SelectItem>
+												<SelectItem value="pending">Pending</SelectItem>
+												<SelectItem value="resolved">Resolved</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									{helpRequests.map((request) => (
-										<div key={request.id} className="border rounded-lg p-4 space-y-2">
-											<div className="flex items-center justify-between">
-												<div>
-													<h3 className="font-medium">{request.name}</h3>
-													<p className="text-sm text-gray-500">{request.email}</p>
-												</div>
-												<div className="flex items-center gap-2">
-													<span
-														className={`text-sm px-2 py-1 rounded-full ${
-															request.status === 'pending'
-																? 'bg-yellow-100 text-yellow-800'
-																: 'bg-green-100 text-green-800'
-														}`}
-													>
-														{request.status}
-													</span>
-													<Button variant="outline" size="sm" disabled>
-														Toggle Status
-													</Button>
-												</div>
-											</div>
-											<p className="text-sm">{request.message}</p>
-											<p className="text-xs text-gray-500">Submitted on: {request.date}</p>
-										</div>
-									))}
-								</div>
+								{loadingHelp ? (
+									<div>Loading help requests...</div>
+								) : helpError ? (
+									<div className="text-red-600">{helpError}</div>
+								) : (
+									<div className="space-y-4">
+										{helpRequests.length === 0 ? (
+											<div>Tidak ada permintaan bantuan.</div>
+										) : (
+											helpRequests.map((request) => {
+												const isPending = request.status === 'pending';
+												const targetStatus = isPending ? 'resolved' : 'pending';
+												return (
+													<div key={request.id} className="border rounded-lg p-4 space-y-2">
+														<div className="flex items-center justify-between">
+															<div>
+																<h3 className="font-medium">{request.name}</h3>
+																<p className="text-sm text-gray-500">{request.email}</p>
+															</div>
+															<div className="flex items-center gap-2">
+																<span
+																	className={`text-sm px-2 py-1 rounded-full ${
+																		request.status === 'pending'
+																			? 'bg-yellow-100 text-yellow-800'
+																			: request.status === 'success' ||
+																			  request.status === 'resolved'
+																			? 'bg-green-100 text-green-800'
+																			: 'bg-gray-100 text-gray-800'
+																	}`}
+																>
+																	{request.status}
+																</span>
+																<AlertDialog
+																	open={dialogOpen === request.id}
+																	onOpenChange={(open) => setDialogOpen(open ? request.id : null)}
+																>
+																	<AlertDialogTrigger asChild>
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			onClick={() => {
+																				setDialogOpen(request.id);
+																				setNextStatus(targetStatus);
+																			}}
+																			disabled={updatingId === request.id}
+																		>
+																			{updatingId === request.id ? 'Updating...' : 'Toggle Status'}
+																		</Button>
+																	</AlertDialogTrigger>
+																	<AlertDialogContent>
+																		<AlertDialogHeader>
+																			<AlertDialogTitle>Ubah status bantuan?</AlertDialogTitle>
+																			<AlertDialogDescription>
+																				Apakah Anda yakin ingin mengubah status bantuan ini menjadi{' '}
+																				<b>{targetStatus}</b>?
+																			</AlertDialogDescription>
+																		</AlertDialogHeader>
+																		<AlertDialogFooter>
+																			<AlertDialogCancel>Batal</AlertDialogCancel>
+																			<AlertDialogAction
+																				onClick={() => handleToggleStatus(request.id, targetStatus)}
+																				disabled={updatingId === request.id}
+																			>
+																				Ya, Ubah Status
+																			</AlertDialogAction>
+																		</AlertDialogFooter>
+																	</AlertDialogContent>
+																</AlertDialog>
+															</div>
+														</div>
+														<p className="text-sm">{request.message}</p>
+														<p className="text-xs text-gray-500">Submitted on: {request.date}</p>
+													</div>
+												);
+											})
+										)}
+									</div>
+								)}
 							</CardContent>
 						</Card>
 					</TabsContent>

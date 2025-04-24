@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
+import History from './pages/History';
 import Admin from './pages/Admin';
 import Pricing from './pages/Pricing';
 import Payment from './pages/Payment';
@@ -52,6 +53,14 @@ const App = () => (
 						element={
 							<ProtectedRoute>
 								<Reports />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/history"
+						element={
+							<ProtectedRoute>
+								<History />
 							</ProtectedRoute>
 						}
 					/>

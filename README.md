@@ -71,3 +71,18 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Fitur Frontend Terbaru (2025)
+
+- **History Page:**
+  - Tab Payment & Support kini memiliki filter status (dropdown + icon filter, konsisten dengan Admin)
+  - Pagination 25 data per halaman, navigasi Next/Prev
+  - Data diambil per page dan sesuai filter dari backend (bukan seluruh data sekaligus)
+  - Loading, error, dan empty state sudah ditangani
+- **Best Practice:**
+  - UI konsisten, maintainable, dan scalable
+  - Komponen filter dan pagination mudah di-extend untuk kebutuhan lain
+
+## Catatan
+
+- Frontend sudah siap untuk integrasi production dengan backend CAPE terbaru (support filter status & pagination)

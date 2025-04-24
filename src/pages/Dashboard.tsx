@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowUpRight, CreditCard, Plus, TrendingDown, TrendingUp } from 'lucide-react';
+import {
+	ArrowUpRight,
+	CreditCard,
+	Plus,
+	TrendingDown,
+	TrendingUp,
+	MessageCircle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	BarChart,
@@ -16,6 +23,7 @@ import {
 	Cell,
 } from 'recharts';
 import { apiRequest } from '@/utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const formatRupiah = (amount: number) => {
 	return new Intl.NumberFormat('id-ID', {
@@ -53,6 +61,7 @@ const Dashboard = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [monthlyExpenses, setMonthlyExpenses] = useState<{ label: string; total: number }[]>([]);
 	const [userRole, setUserRole] = useState<string | null>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const userStr = localStorage.getItem('user');
@@ -165,6 +174,38 @@ const Dashboard = () => {
 					<Plus className="mr-2 h-4 w-4" /> Add Expense
 				</Button> */}
 			</div>
+			{/* Section WhatsApp Bot */}
+			<Card className="mb-8">
+				<CardHeader className="flex flex-row items-center justify-between gap-4">
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+							<MessageCircle className="h-6 w-6 text-green-600" />
+						</div>
+						<div>
+							<CardTitle className="text-base">Chat WhatsApp Bot</CardTitle>
+							<CardDescription>
+								Silakan chat bot WhatsApp di sini, ketik{' '}
+								<span className="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">/help</span>{' '}
+								untuk info lebih lanjut.
+							</CardDescription>
+						</div>
+					</div>
+					{userRole === 'pro' || userRole === 'admin' ? (
+						<a
+							href="https://wa.me/6285710001174"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-block"
+						>
+							<Button className="bg-green-600 hover:bg-green-700 text-white">Chat Bot</Button>
+						</a>
+					) : (
+						<Button className="bg-primary" onClick={() => navigate('/pricing')}>
+							Upgrade to Pro
+						</Button>
+					)}
+				</CardHeader>
+			</Card>
 			{showError && <div className="text-red-600 mb-4">{error}</div>}
 			{loading ? (
 				<div>Loading...</div>

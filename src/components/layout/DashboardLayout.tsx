@@ -11,6 +11,7 @@ import {
 	X,
 	UserCog,
 	PiggyBank,
+	History,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -76,6 +77,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 			icon: BarChart3,
 			href: '/reports',
 			current: location.pathname === '/reports',
+		},
+		{
+			name: 'History',
+			icon: History,
+			href: '/history',
+			current: location.pathname === '/history',
 		},
 		{
 			name: 'Profile',
