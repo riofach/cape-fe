@@ -1,88 +1,119 @@
-# Welcome to your Lovable project
+# CAPE Frontend
 
-## Project info
+Aplikasi web frontend untuk **CAPE (Catatan Pengeluaran & Pembayaran)**. Dibangun dengan React, TypeScript, Vite, shadcn-ui, dan Tailwind CSS. Terintegrasi penuh dengan backend CAPE untuk manajemen keuangan, pembayaran, dan support user.
 
-**URL**: https://lovable.dev/projects/cc13bd9a-2ac7-4fb3-b541-fba04575cecd
+---
 
-## How can I edit this code?
+## ✨ Fitur Utama
 
-There are several ways of editing your application.
+- **Dashboard**: Ringkasan keuangan, notifikasi, dan info status akun
+- **Expenses**: CRUD pengeluaran, filter, pencarian, pagination
+- **Income**: CRUD pemasukan, filter, pencarian, pagination
+- **Payment History**: Riwayat pembayaran, upload bukti, filter status, pagination
+- **Support**: Kirim & lihat riwayat bantuan, filter status, pagination
+- **Authentication**: Register, login, JWT, sinkronisasi role user
+- **Admin Panel**: Manajemen user, verifikasi pembayaran, kelola support (khusus admin)
+- **UI/UX Modern**: Komponen konsisten, responsif, dark mode ready
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cc13bd9a-2ac7-4fb3-b541-fba04575cecd) and start prompting.
+## 📁 Struktur Folder
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+frontend/
+├── public/           # Static assets
+├── src/
+│   ├── components/   # Komponen UI reusable (shadcn-ui, custom)
+│   ├── pages/        # Halaman utama (Dashboard, Expenses, Income, History, Admin, dsb)
+│   ├── utils/        # Helper, API request, hooks custom
+│   ├── layout/       # Layout utama (DashboardLayout, MainLayout)
+│   └── ...           # File konfigurasi, style, dsb
+├── package.json      # Daftar dependensi
+├── tailwind.config.ts# Konfigurasi Tailwind
+├── vite.config.ts    # Konfigurasi Vite
+└── README.md         # Dokumentasi ini
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🚀 Cara Instalasi & Menjalankan
 
-**Use GitHub Codespaces**
+1. **Clone repository**
+   ```sh
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_NAME>
+   ```
+2. **Install dependensi**
+   ```sh
+   npm install
+   ```
+3. **Buat file environment (opsional)**
+   - Jika perlu, buat `.env` untuk konfigurasi API URL, dsb
+4. **Jalankan development server**
+   ```sh
+   npm run dev
+   ```
+5. **Build untuk production**
+   ```sh
+   npm run build
+   npm run preview
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🔗 Integrasi Backend
 
-This project is built with:
+- Pastikan backend CAPE sudah berjalan (lihat dokumentasi backend)
+- Default API URL: `http://localhost:5000/api` (bisa diubah di utils/api.ts atau .env)
+- Semua fitur (expenses, income, payment, support, auth) terhubung ke backend via REST API
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🛠️ Dependensi Utama
 
-Simply open [Lovable](https://lovable.dev/projects/cc13bd9a-2ac7-4fb3-b541-fba04575cecd) and click on Share -> Publish.
+- [Vite](https://vitejs.dev/) (build tool)
+- [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [shadcn-ui](https://ui.shadcn.com/) (UI components)
+- [Tailwind CSS](https://tailwindcss.com/) (utility-first CSS)
+- [date-fns](https://date-fns.org/) (format tanggal)
+- [lucide-react](https://lucide.dev/) (icon)
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 🧑‍💻 Panduan Kontribusi
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Gunakan branch feature/bugfix untuk perubahan besar
+- Pastikan code clean, gunakan komponen reusable jika memungkinkan
+- Ikuti style guide (Prettier, ESLint, dsb)
+- Tambahkan komentar pada bagian penting/kompleks
+- Buat Pull Request (PR) ke branch utama, sertakan deskripsi jelas
+- Jalankan testing sebelum merge (jika ada)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
 
-## Fitur Frontend Terbaru (2025)
+## 💡 Best Practice
 
-- **History Page:**
-  - Tab Payment & Support kini memiliki filter status (dropdown + icon filter, konsisten dengan Admin)
-  - Pagination 25 data per halaman, navigasi Next/Prev
-  - Data diambil per page dan sesuai filter dari backend (bukan seluruh data sekaligus)
-  - Loading, error, dan empty state sudah ditangani
-- **Best Practice:**
-  - UI konsisten, maintainable, dan scalable
-  - Komponen filter dan pagination mudah di-extend untuk kebutuhan lain
+- Komponen UI reusable, hindari duplikasi kode
+- State management sederhana (useState, useEffect, custom hooks)
+- Error handling di setiap API call
+- Loading & empty state selalu ditangani
+- Responsive & mobile friendly
+- Semua fitur baru sebaiknya didokumentasikan di README
 
-## Catatan
+---
 
-- Frontend sudah siap untuk integrasi production dengan backend CAPE terbaru (support filter status & pagination)
+## 📚 Dokumentasi Lanjutan
+
+- [Dokumentasi Backend CAPE](../backend/README.md) (lihat endpoint, autentikasi, dsb)
+
+---
+
+## 👥 Credit & Kontak
+
+- Project ini dikembangkan oleh tim CAPE
+- Untuk kontribusi, pertanyaan, atau bug report silakan buat issue di GitHub repo ini
+
+---
+
+**Catatan:**
+Frontend sudah siap untuk integrasi production dengan backend CAPE terbaru (support filter status & pagination, UI konsisten, maintainable, scalable)

@@ -27,6 +27,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
+import BotSubscriptionTab from '@/components/admin/BotSubscriptionTab';
 
 // Define types to match component expectations
 type UserRole = 'free' | 'pro' | 'admin';
@@ -334,6 +335,7 @@ const Admin = () => {
 						<TabsTrigger value="users">User Management</TabsTrigger>
 						<TabsTrigger value="payments">Payment Proofs</TabsTrigger>
 						<TabsTrigger value="help">Help & Support</TabsTrigger>
+						<TabsTrigger value="bot">Bot</TabsTrigger>
 					</TabsList>
 
 					<TabsContent value="users" className="mt-4">
@@ -467,6 +469,10 @@ const Admin = () => {
 								)}
 							</CardContent>
 						</Card>
+					</TabsContent>
+
+					<TabsContent value="bot" className="mt-4">
+						<BotSubscriptionTab />
 					</TabsContent>
 				</Tabs>
 			</div>
