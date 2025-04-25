@@ -19,23 +19,23 @@ const Pricing = () => {
 
 	useEffect(() => {
 		const syncUserRole = async () => {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			if (token) {
 				try {
 					const res = await apiRequest('/auth/profile', {}, true);
 					if (res && res.data && res.data.role) {
 						setUserRole(res.data.role);
 						// Update localStorage agar seluruh frontend konsisten
-						const userStr = localStorage.getItem('user');
+						const userStr = sessionStorage.getItem('user');
 						if (userStr) {
 							const user = JSON.parse(userStr);
 							user.role = res.data.role;
-							localStorage.setItem('user', JSON.stringify(user));
+							sessionStorage.setItem('user', JSON.stringify(user));
 						}
 					}
 				} catch (e) {
 					// fallback ke localStorage jika gagal fetch
-					const userStr = localStorage.getItem('user');
+					const userStr = sessionStorage.getItem('user');
 					if (userStr) {
 						const user = JSON.parse(userStr);
 						setUserRole(user.role || null);
@@ -43,7 +43,7 @@ const Pricing = () => {
 				}
 			} else {
 				// fallback ke localStorage jika belum login
-				const userStr = localStorage.getItem('user');
+				const userStr = sessionStorage.getItem('user');
 				if (userStr) {
 					const user = JSON.parse(userStr);
 					setUserRole(user.role || null);

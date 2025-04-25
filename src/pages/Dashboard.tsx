@@ -64,9 +64,9 @@ const Dashboard = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const userStr = localStorage.getItem('user');
+		const userStr = sessionStorage.getItem('user');
 		if (!userStr || userStr === 'undefined' || userStr === 'null') {
-			console.warn('User from localStorage is invalid:', userStr);
+			console.warn('User from sessionStorage is invalid:', userStr);
 			setUserRole('free');
 			return;
 		}

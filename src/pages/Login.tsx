@@ -36,9 +36,9 @@ const Login = () => {
 				method: 'POST',
 				body: JSON.stringify({ email, password }),
 			});
-			// Simpan token ke localStorage
-			localStorage.setItem('token', res.data.token);
-			localStorage.setItem('user', JSON.stringify(res.data));
+			// Simpan token ke sessionStorage
+			sessionStorage.setItem('token', res.data.token);
+			sessionStorage.setItem('user', JSON.stringify(res.data));
 			// Redirect ke dashboard
 			window.location.href = '/dashboard';
 		} catch (err: unknown) {

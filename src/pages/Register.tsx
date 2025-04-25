@@ -55,8 +55,8 @@ const Register = () => {
 					phoneNumber: phoneNumber || undefined,
 				}),
 			});
-			localStorage.setItem('token', res.data.token);
-			localStorage.setItem('user', JSON.stringify(res.data.user));
+			sessionStorage.setItem('token', res.data.token);
+			sessionStorage.setItem('user', JSON.stringify(res.data.user));
 			window.location.href = '/dashboard';
 		} catch (err: unknown) {
 			if (typeof err === 'object' && err && 'message' in err) {

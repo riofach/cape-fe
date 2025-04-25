@@ -92,7 +92,7 @@ const Admin = () => {
 		setLoadingUsers(true);
 		setUserError(null);
 		try {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			const res = await fetch('/api/auth/users', {
 				headers: { Authorization: `Bearer ${token}` },
 			});
@@ -121,7 +121,7 @@ const Admin = () => {
 		setLoadingPayments(true);
 		setPaymentError(null);
 		try {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			const res = await fetch('/api/payments/all', {
 				headers: { Authorization: `Bearer ${token}` },
 			});
@@ -144,7 +144,7 @@ const Admin = () => {
 		setLoadingHelp(true);
 		setHelpError(null);
 		try {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			let url = '/api/support';
 			const params = [];
 			if (helpStatus !== 'all') params.push(`status=${helpStatus}`);
@@ -197,7 +197,7 @@ const Admin = () => {
 	useEffect(() => {
 		// Cek role user dari localStorage/token atau fetch profile
 		const checkRole = async () => {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			if (!token) {
 				setIsAdmin(false);
 				navigate('/');
@@ -227,7 +227,7 @@ const Admin = () => {
 
 	const handleRoleChange = async (userId: string, newRole: UserRole) => {
 		try {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			const res = await fetch(`/api/auth/users/${userId}/role`, {
 				method: 'PATCH',
 				headers: {
@@ -260,7 +260,7 @@ const Admin = () => {
 
 	const handlePaymentStatus = async (paymentId: string, newStatus: PaymentStatus) => {
 		try {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			const res = await fetch('/api/payments/verify', {
 				method: 'POST',
 				headers: {
@@ -293,7 +293,7 @@ const Admin = () => {
 	const handleToggleStatus = async (id: string, status: string) => {
 		setUpdatingId(id);
 		try {
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			const res = await fetch(`/api/support/${id}`, {
 				method: 'PATCH',
 				headers: {
@@ -331,12 +331,22 @@ const Admin = () => {
 				<h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
 				<Tabs defaultValue="users">
-					<TabsList>
-						<TabsTrigger value="users">User Management</TabsTrigger>
-						<TabsTrigger value="payments">Payment Proofs</TabsTrigger>
-						<TabsTrigger value="help">Help & Support</TabsTrigger>
-						<TabsTrigger value="bot">Bot</TabsTrigger>
-					</TabsList>
+					<div className="overflow-x-auto">
+						<TabsList className="w-full inline-flex min-w-max border-b">
+							<TabsTrigger value="users" className="min-w-[140px]">
+								User Management
+							</TabsTrigger>
+							<TabsTrigger value="payments" className="min-w-[140px]">
+								Payment Proofs
+							</TabsTrigger>
+							<TabsTrigger value="help" className="min-w-[140px]">
+								Support
+							</TabsTrigger>
+							<TabsTrigger value="bot" className="min-w-[140px]">
+								Bot
+							</TabsTrigger>
+						</TabsList>
+					</div>
 
 					<TabsContent value="users" className="mt-4">
 						{loadingUsers ? (
@@ -363,114 +373,49 @@ const Admin = () => {
 							<CardHeader>
 								<CardTitle>Help & Support Requests</CardTitle>
 								<CardDescription>View and manage user help requests</CardDescription>
-								<div className="flex gap-4 items-center mt-4">
-									<div className="relative flex-1">
-										<Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-										<Input
-											placeholder="Search help requests..."
-											value={helpSearch}
-											onChange={(e) => setHelpSearch(e.target.value)}
-											className="pl-9"
-										/>
-									</div>
-									<div className="flex items-center gap-2">
-										<Filter className="h-4 w-4 text-gray-500" />
-										<Select value={helpStatus} onValueChange={setHelpStatus}>
-											<SelectTrigger className="w-32">
-												<SelectValue placeholder="Filter status" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">All Status</SelectItem>
-												<SelectItem value="pending">Pending</SelectItem>
-												<SelectItem value="resolved">Resolved</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
 							</CardHeader>
 							<CardContent>
-								{loadingHelp ? (
-									<div>Loading help requests...</div>
-								) : helpError ? (
-									<div className="text-red-600">{helpError}</div>
-								) : (
-									<div className="space-y-4">
-										{helpRequests.length === 0 ? (
-											<div>Tidak ada permintaan bantuan.</div>
-										) : (
-											helpRequests.map((request) => {
-												const isPending = request.status === 'pending';
-												const targetStatus = isPending ? 'resolved' : 'pending';
-												return (
-													<div key={request.id} className="border rounded-lg p-4 space-y-2">
-														<div className="flex items-center justify-between">
-															<div>
-																<h3 className="font-medium">{request.name}</h3>
-																<p className="text-sm text-gray-500">{request.email}</p>
-															</div>
-															<div className="flex items-center gap-2">
-																<span
-																	className={`text-sm px-2 py-1 rounded-full ${
-																		request.status === 'pending'
-																			? 'bg-yellow-100 text-yellow-800'
-																			: request.status === 'success' ||
-																			  request.status === 'resolved'
-																			? 'bg-green-100 text-green-800'
-																			: 'bg-gray-100 text-gray-800'
-																	}`}
-																>
-																	{request.status}
-																</span>
-																<AlertDialog
-																	open={dialogOpen === request.id}
-																	onOpenChange={(open) => setDialogOpen(open ? request.id : null)}
-																>
-																	<AlertDialogTrigger asChild>
-																		<Button
-																			variant="outline"
-																			size="sm"
-																			onClick={() => {
-																				setDialogOpen(request.id);
-																				setNextStatus(targetStatus);
-																			}}
-																			disabled={updatingId === request.id}
-																		>
-																			{updatingId === request.id ? 'Updating...' : 'Toggle Status'}
-																		</Button>
-																	</AlertDialogTrigger>
-																	<AlertDialogContent>
-																		<AlertDialogHeader>
-																			<AlertDialogTitle>Ubah status bantuan?</AlertDialogTitle>
-																			<AlertDialogDescription>
-																				Apakah Anda yakin ingin mengubah status bantuan ini menjadi{' '}
-																				<b>{targetStatus}</b>?
-																			</AlertDialogDescription>
-																		</AlertDialogHeader>
-																		<AlertDialogFooter>
-																			<AlertDialogCancel>Batal</AlertDialogCancel>
-																			<AlertDialogAction
-																				onClick={() => handleToggleStatus(request.id, targetStatus)}
-																				disabled={updatingId === request.id}
-																			>
-																				Ya, Ubah Status
-																			</AlertDialogAction>
-																		</AlertDialogFooter>
-																	</AlertDialogContent>
-																</AlertDialog>
-															</div>
-														</div>
-														<p className="text-sm">{request.message}</p>
-														<p className="text-xs text-gray-500">Submitted on: {request.date}</p>
-													</div>
-												);
-											})
-										)}
-									</div>
-								)}
+								<div className="space-y-4">
+									{helpRequests.map((request) => (
+										<div key={request.id} className="border rounded-lg p-4 space-y-2">
+											<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+												<div className="space-y-1">
+													<h3 className="font-medium">{request.name}</h3>
+													<p className="text-sm text-gray-500">{request.email}</p>
+												</div>
+												<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+													<span
+														className={`text-sm px-2 py-1 rounded-full inline-flex items-center justify-center ${
+															request.status === 'pending'
+																? 'bg-yellow-100 text-yellow-800'
+																: 'bg-green-100 text-green-800'
+														}`}
+													>
+														{request.status}
+													</span>
+													<Button
+														onClick={() =>
+															handleToggleStatus(
+																request.id,
+																request.status === 'pending' ? 'resolved' : 'pending'
+															)
+														}
+														variant="outline"
+														size="sm"
+														className="w-full sm:w-auto"
+													>
+														Toggle Status
+													</Button>
+												</div>
+											</div>
+											<p className="text-sm">{request.message}</p>
+											<p className="text-xs text-gray-500">Submitted on: {request.date}</p>
+										</div>
+									))}
+								</div>
 							</CardContent>
 						</Card>
 					</TabsContent>
-
 					<TabsContent value="bot" className="mt-4">
 						<BotSubscriptionTab />
 					</TabsContent>

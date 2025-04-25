@@ -469,12 +469,22 @@ const Reports = () => {
 							value={selectedTab}
 							onValueChange={setSelectedTab}
 						>
-							<TabsList className="grid grid-cols-3 md:grid-cols-5 w-full mb-4">
-								<TabsTrigger value="overview">Laporan Umum</TabsTrigger>
-								<TabsTrigger value="categories">Kategori</TabsTrigger>
-								<TabsTrigger value="trends">Tren</TabsTrigger>
-								<TabsTrigger value="daily">Pengeluaran Harian</TabsTrigger>
-							</TabsList>
+							<div className="overflow-x-auto">
+								<TabsList className="w-full inline-flex min-w-max border-b">
+									<TabsTrigger value="overview" className="min-w-[140px]">
+										Laporan Umum
+									</TabsTrigger>
+									<TabsTrigger value="categories" className="min-w-[140px]">
+										Kategori
+									</TabsTrigger>
+									<TabsTrigger value="trends" className="min-w-[140px]">
+										Tren
+									</TabsTrigger>
+									<TabsTrigger value="daily" className="min-w-[140px]">
+										Pengeluaran Harian
+									</TabsTrigger>
+								</TabsList>
+							</div>
 
 							{/* Overview Tab */}
 							<TabsContent value="overview" className="space-y-6">

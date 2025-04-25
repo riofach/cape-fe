@@ -30,7 +30,7 @@ const Payment = () => {
 			formData.append('notes', notes);
 			// Jika ingin custom amount, tambahkan: formData.append('amount', '10000');
 
-			const token = localStorage.getItem('token');
+			const token = sessionStorage.getItem('token');
 			const res = await fetch('/api/payments/upload', {
 				method: 'POST',
 				headers: {

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { apiRequest } from '@/utils/api';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
 	_id: string;
@@ -47,6 +48,7 @@ const Profile = () => {
 	const [subscription, setSubscription] = useState<{ status: string; endDate?: string } | null>(
 		null
 	);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -221,7 +223,7 @@ const Profile = () => {
 										: '-'}
 								</p>
 							</div>
-							<Button variant="outline" size="sm">
+							<Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
 								Manage Subscription
 							</Button>
 						</div>

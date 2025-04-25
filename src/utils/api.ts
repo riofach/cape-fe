@@ -12,7 +12,7 @@ export async function apiRequest(
 
 	// Tambahkan Authorization jika withAuth true dan ada token
 	if (withAuth) {
-		const token = localStorage.getItem('token');
+		const token = sessionStorage.getItem('token');
 		if (token) headers['Authorization'] = `Bearer ${token}`;
 	}
 
@@ -21,6 +21,16 @@ export async function apiRequest(
 		headers,
 	});
 	const data = await res.json();
-	if (!res.ok) throw data;
+	if (!res.ok) {
+		// Global auto logout jika session expired (force_logout)
+		if (
+			(res.status === 401 || res.status === 403) &&
+			data?.message?.toLowerCase().includes('session expired')
+		) {
+			sessionStorage.clear();
+			window.location.href = '/login';
+		}
+		throw data;
+	}
 	return data;
 }

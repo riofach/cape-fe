@@ -19,6 +19,7 @@ import Help from './pages/Help';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Income from './pages/Income';
 import Profile from './pages/Profile';
+import { useEffect } from 'react';
 
 const queryClient = new QueryClient();
 
