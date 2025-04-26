@@ -9,7 +9,10 @@ export default defineConfig(({ mode }) => ({
 		host: '::',
 		port: 8080,
 		proxy: {
-			'/api': 'http://localhost:5000', // Tambahkan baris ini
+			// untuk development:
+			// '/api': 'http://localhost:5000',
+			// untuk production:
+			'/api': 'https://cape-be.up.railway.app',
 		},
 	},
 	plugins: [react(), mode === 'development' && componentTagger()].filter(Boolean),
