@@ -19,7 +19,7 @@ import {
 	DialogTitle,
 	DialogFooter,
 } from '@/components/ui/dialog';
-import { apiRequest } from '@/utils/api';
+import { apiFetch } from '@/lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -55,7 +55,10 @@ const Profile = () => {
 			setLoading(true);
 			setError(null);
 			try {
-				const res = await apiRequest('/auth/profile', {}, true);
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch('/api/auth/profile', {
+					headers: { Authorization: `Bearer ${token}` },
+				});
 				setUserData(res.data as UserProfile);
 			} catch (err) {
 				setError('Gagal memuat data profil. Silakan login ulang.');
@@ -66,7 +69,10 @@ const Profile = () => {
 		};
 		const fetchSubscription = async () => {
 			try {
-				const res = await apiRequest('/auth/subscription/status', {}, true);
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch('/api/auth/subscription/status', {
+					headers: { Authorization: `Bearer ${token}` },
+				});
 				setSubscription(res);
 			} catch {
 				setSubscription(null);
@@ -90,17 +96,12 @@ const Profile = () => {
 		}
 		setChangeLoading(true);
 		try {
-			await apiRequest(
-				'/auth/change-password',
-				{
-					method: 'POST',
-					body: JSON.stringify({
-						currentPassword,
-						newPassword,
-					}),
-				},
-				true
-			);
+			const token = sessionStorage.getItem('token');
+			await apiFetch('/api/auth/change-password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+				body: JSON.stringify({ currentPassword, newPassword }),
+			});
 			setChangeSuccess('Password berhasil diubah.');
 			setCurrentPassword('');
 			setNewPassword('');

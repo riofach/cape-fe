@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Eye, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { apiRequest } from '@/utils/api';
+import { apiFetch } from '@/lib/api';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import {
@@ -89,10 +89,10 @@ const History = () => {
 			setPaymentError(null);
 			try {
 				const statusParam = paymentStatus !== 'all' ? `&status=${paymentStatus}` : '';
-				const res = await apiRequest(
-					`/payments?page=${paymentPage}&limit=${paymentLimit}${statusParam}`,
-					{},
-					true
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch(
+					`/api/payments?page=${paymentPage}&limit=${paymentLimit}${statusParam}`,
+					{ headers: { Authorization: `Bearer ${token}` } }
 				);
 				if (!res.success) throw new Error(res.message || 'Gagal mengambil data pembayaran');
 				setPaymentTotalPages(res.totalPages || 1);
@@ -133,10 +133,10 @@ const History = () => {
 			setSupportError(null);
 			try {
 				const statusParam = supportStatus !== 'all' ? `&status=${supportStatus}` : '';
-				const res = await apiRequest(
-					`/support/mine?page=${supportPage}&limit=${supportLimit}${statusParam}`,
-					{},
-					true
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch(
+					`/api/support/mine?page=${supportPage}&limit=${supportLimit}${statusParam}`,
+					{ headers: { Authorization: `Bearer ${token}` } }
 				);
 				if (!res.success) throw new Error(res.message || 'Gagal mengambil data support');
 				setSupportTotalPages(res.totalPages || 1);

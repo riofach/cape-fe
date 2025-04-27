@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
 import BotSubscriptionTab from '@/components/admin/BotSubscriptionTab';
+import { apiFetch } from '@/lib/api';
 
 // Define types to match component expectations
 type UserRole = 'free' | 'pro' | 'admin';
@@ -93,11 +94,9 @@ const Admin = () => {
 		setUserError(null);
 		try {
 			const token = sessionStorage.getItem('token');
-			const res = await fetch('/api/auth/users', {
+			const data = await apiFetch('/api/auth/users', {
 				headers: { Authorization: `Bearer ${token}` },
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal mengambil data user');
 			setUsers(
 				data.data.map((u: UserApi) => ({
 					id: u._id,
@@ -122,11 +121,9 @@ const Admin = () => {
 		setPaymentError(null);
 		try {
 			const token = sessionStorage.getItem('token');
-			const res = await fetch('/api/payments/all', {
+			const data = await apiFetch('/api/payments/all', {
 				headers: { Authorization: `Bearer ${token}` },
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal mengambil data pembayaran');
 			setPayments(data.data);
 		} catch (err: unknown) {
 			let errorMsg = 'Terjadi kesalahan';
@@ -150,11 +147,9 @@ const Admin = () => {
 			if (helpStatus !== 'all') params.push(`status=${helpStatus}`);
 			if (helpSearch) params.push(`q=${encodeURIComponent(helpSearch)}`);
 			if (params.length > 0) url += '?' + params.join('&');
-			const res = await fetch(url, {
+			const data = await apiFetch(url, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal mengambil data bantuan');
 			setHelpRequests(
 				(data.data as SupportApi[]).map((req) => ({
 					id: req._id,
@@ -204,11 +199,10 @@ const Admin = () => {
 				return;
 			}
 			try {
-				const res = await fetch('/api/auth/profile', {
+				const data = await apiFetch('/api/auth/profile', {
 					headers: { Authorization: `Bearer ${token}` },
 				});
-				const data = await res.json();
-				if (res.ok && data?.data?.role === 'admin') {
+				if (data?.data?.role === 'admin') {
 					setIsAdmin(true);
 				} else {
 					setIsAdmin(false);
@@ -228,7 +222,7 @@ const Admin = () => {
 	const handleRoleChange = async (userId: string, newRole: UserRole) => {
 		try {
 			const token = sessionStorage.getItem('token');
-			const res = await fetch(`/api/auth/users/${userId}/role`, {
+			await apiFetch(`/api/auth/users/${userId}/role`, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json',
@@ -236,8 +230,6 @@ const Admin = () => {
 				},
 				body: JSON.stringify({ role: newRole }),
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal update role user');
 			setUsers((prev) =>
 				prev.map((user) => (user.id === userId ? { ...user, role: newRole } : user))
 			);
@@ -261,7 +253,7 @@ const Admin = () => {
 	const handlePaymentStatus = async (paymentId: string, newStatus: PaymentStatus) => {
 		try {
 			const token = sessionStorage.getItem('token');
-			const res = await fetch('/api/payments/verify', {
+			await apiFetch('/api/payments/verify', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -269,13 +261,10 @@ const Admin = () => {
 				},
 				body: JSON.stringify({ paymentId, status: newStatus }),
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal update status pembayaran');
 			toast({
 				title: 'Payment Status Updated',
 				description: `Payment has been ${newStatus}.`,
 			});
-			// Jika approved, refresh data agar role user juga terupdate
 			fetchPayments();
 		} catch (err: unknown) {
 			let errorMsg = 'Terjadi kesalahan';
@@ -294,7 +283,7 @@ const Admin = () => {
 		setUpdatingId(id);
 		try {
 			const token = sessionStorage.getItem('token');
-			const res = await fetch(`/api/support/${id}`, {
+			await apiFetch(`/api/support/${id}`, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json',
@@ -302,8 +291,6 @@ const Admin = () => {
 				},
 				body: JSON.stringify({ status }),
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal update status bantuan');
 			toast({
 				title: 'Status Updated',
 				description: 'Status bantuan berhasil diubah.',

@@ -38,7 +38,7 @@ import {
 	AreaChart,
 	Area,
 } from 'recharts';
-import { apiRequest } from '@/utils/api';
+import { apiFetch } from '@/lib/api';
 import type { TooltipProps } from 'recharts';
 
 // Mock monthly expense data
@@ -198,10 +198,10 @@ const Reports = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await apiRequest(
-				`/expenses/report/monthly?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
-				{},
-				true
+			const token = sessionStorage.getItem('token');
+			const res = await apiFetch(
+				`/api/expenses/report/monthly?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
+				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 			setReport(res.data);
 		} catch (err: unknown) {
@@ -223,7 +223,10 @@ const Reports = () => {
 
 	const fetchYearly = async () => {
 		try {
-			const res = await apiRequest(`/expenses/report/yearly?year=${selectedYear}`, {}, true);
+			const token = sessionStorage.getItem('token');
+			const res = await apiFetch(`/api/expenses/report/yearly?year=${selectedYear}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
 			setYearlyData(res.data || []);
 		} catch (err: unknown) {
 			if (
@@ -244,10 +247,10 @@ const Reports = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await apiRequest(
-				`/expenses/report/monthly?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
-				{},
-				true
+			const token = sessionStorage.getItem('token');
+			const res = await apiFetch(
+				`/api/expenses/report/monthly?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
+				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 			const categories = (res.data.categories || []).map(
 				(cat: { name?: string; category?: string; amount: number }) => ({
@@ -269,10 +272,10 @@ const Reports = () => {
 		setDailyLoading(true);
 		setDailyError(null);
 		try {
-			const res = await apiRequest(
-				`/expenses/report/daily?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
-				{},
-				true
+			const token = sessionStorage.getItem('token');
+			const res = await apiFetch(
+				`/api/expenses/report/daily?month=${parseInt(selectedMonth, 10)}&year=${selectedYear}`,
+				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 			setDailyData(res.data || []);
 		} catch (err) {
@@ -304,23 +307,21 @@ const Reports = () => {
 	}, [selectedTab, selectedMonth, selectedYear]);
 
 	useEffect(() => {
-		// Ambil role user dari localStorage (sinkron dengan backend)
-		const userStr = localStorage.getItem('user');
-		if (userStr) {
+		// Ambil role user dari backend secara real-time
+		const fetchUserRole = async () => {
 			try {
-				const user = JSON.parse(userStr);
-				if (user && user.role) setUserRole(user.role.toLowerCase());
-			} catch {
-				/* ignore */
-			}
-		}
-		// Fallback: jika userRole masih null, coba fetch dari API
-		if (!userRole) {
-			apiRequest('/auth/profile', {}, true).then((res) => {
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch('/api/auth/profile', {
+					headers: { Authorization: `Bearer ${token}` },
+				});
 				if (res && res.data && res.data.role) setUserRole(res.data.role.toLowerCase());
-			});
-		}
-	}, [userRole]);
+				else setUserRole('free');
+			} catch {
+				setUserRole('free');
+			}
+		};
+		fetchUserRole();
+	}, []);
 
 	const isFreeUser = userRole === 'free';
 

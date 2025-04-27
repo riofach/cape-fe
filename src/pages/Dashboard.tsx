@@ -23,6 +23,7 @@ import {
 	Cell,
 } from 'recharts';
 import { apiRequest } from '@/utils/api';
+import { apiFetch } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 
 const formatRupiah = (amount: number) => {
@@ -64,21 +65,19 @@ const Dashboard = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const userStr = sessionStorage.getItem('user');
-		if (!userStr || userStr === 'undefined' || userStr === 'null') {
-			console.warn('User from sessionStorage is invalid:', userStr);
-			setUserRole('free');
-			return;
-		}
-		try {
-			const user = JSON.parse(userStr);
-			// console.log('Parsed user:', user);
-			if (user && user.role) setUserRole(user.role.toLowerCase());
-			else setUserRole('free');
-		} catch (e) {
-			console.error('Error parsing user:', e);
-			setUserRole('free');
-		}
+		const fetchUserRole = async () => {
+			try {
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch('/api/auth/profile', {
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				if (res && res.data && res.data.role) setUserRole(res.data.role.toLowerCase());
+				else setUserRole('free');
+			} catch {
+				setUserRole('free');
+			}
+		};
+		fetchUserRole();
 	}, []);
 
 	useEffect(() => {
