@@ -28,7 +28,7 @@ const Register = () => {
 			return;
 		}
 		if (!validatePhone(phoneNumber)) {
-			setError('Nomor telepon harus format Indonesia (62xxxxxxxxxxx).');
+			setError('Nomor telepon harus format Indonesia (628xxxxxxxxxx).');
 			return;
 		}
 		if (!validateEmail(email)) {
@@ -48,6 +48,9 @@ const Register = () => {
 		try {
 			const res = await apiFetch('/api/auth/register', {
 				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
 				body: JSON.stringify({
 					username: fullName,
 					email,
@@ -98,7 +101,7 @@ const Register = () => {
 										value={fullName}
 										onChange={(e) => setFullName(e.target.value)}
 										className="block w-full"
-										placeholder="Enter your full name"
+										placeholder="Enter your username"
 									/>
 								</div>
 							</div>
