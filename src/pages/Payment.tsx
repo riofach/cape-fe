@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api';
 
 const Payment = () => {
 	const [file, setFile] = useState<File | null>(null);
@@ -31,15 +32,14 @@ const Payment = () => {
 			// Jika ingin custom amount, tambahkan: formData.append('amount', '10000');
 
 			const token = sessionStorage.getItem('token');
-			const res = await fetch('/api/payments/upload', {
+			const res = await apiFetch('/api/payments/upload', {
 				method: 'POST',
 				headers: {
 					Authorization: token ? `Bearer ${token}` : '',
 				},
 				body: formData,
 			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.message || 'Gagal upload bukti pembayaran');
+			if (!res.ok) throw new Error(res.message || 'Gagal upload bukti pembayaran');
 			toast({
 				title: 'Bukti pembayaran berhasil dikirim',
 				description: 'Kami akan review pembayaran Anda dan upgrade akun jika valid.',
