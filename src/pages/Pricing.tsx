@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
-import { apiRequest } from '@/utils/api';
+import { apiFetch } from '@/lib/api';
 
 const Pricing = () => {
 	const [userRole, setUserRole] = useState<string | null>(null);
@@ -22,7 +22,9 @@ const Pricing = () => {
 			const token = sessionStorage.getItem('token');
 			if (token) {
 				try {
-					const res = await apiRequest('/auth/profile', {}, true);
+					const res = await apiFetch('/auth/profile', {
+						headers: { Authorization: `Bearer ${token}` },
+					});
 					if (res && res.data && res.data.role) {
 						setUserRole(res.data.role);
 						// Update localStorage agar seluruh frontend konsisten

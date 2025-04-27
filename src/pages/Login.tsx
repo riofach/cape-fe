@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import MainLayout from '@/components/layout/MainLayout';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { apiRequest } from '@/utils/api';
+import { apiFetch } from '@/lib/api';
 
 const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 const validatePhone = (phone: string) => /^62\d{9,13}$/.test(phone);
@@ -32,8 +32,9 @@ const Login = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await apiRequest('/auth/login', {
+			const res = await apiFetch('/api/auth/login', {
 				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password }),
 			});
 			// Simpan token ke sessionStorage
