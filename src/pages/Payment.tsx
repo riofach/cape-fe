@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,39 @@ const Payment = () => {
 	const [file, setFile] = useState<File | null>(null);
 	const [notes, setNotes] = useState('');
 	const [loading, setLoading] = useState(false);
+	const [hasPendingPayment, setHasPendingPayment] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+	const fetchPendingPayment = async () => {
+		try {
+			const token = sessionStorage.getItem('token');
+			const res = await apiFetch('/api/payments?status=pending', {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			// console.log('Pending payment response:', res);
+			setHasPendingPayment(res.data && res.data.length > 0);
+		} catch {
+			setHasPendingPayment(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchPendingPayment();
+		// Polling setiap 10 detik
+		pollingRef.current = setInterval(fetchPendingPayment, 10000);
+		// Event listener saat user kembali ke halaman/tab
+		const handleVisibility = () => {
+			if (document.visibilityState === 'visible') {
+				fetchPendingPayment();
+			}
+		};
+		document.addEventListener('visibilitychange', handleVisibility);
+		return () => {
+			if (pollingRef.current) clearInterval(pollingRef.current);
+			document.removeEventListener('visibilitychange', handleVisibility);
+		};
+	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -32,7 +64,7 @@ const Payment = () => {
 			// Jika ingin custom amount, tambahkan: formData.append('amount', '10000');
 
 			const token = sessionStorage.getItem('token');
-			const res = await apiFetch('/api/payments/upload', {
+			await apiFetch('/api/payments/upload', {
 				method: 'POST',
 				headers: {
 					Authorization: token ? `Bearer ${token}` : '',
@@ -45,6 +77,7 @@ const Payment = () => {
 			});
 			setFile(null);
 			setNotes('');
+			setHasPendingPayment(true);
 			if (fileInputRef.current) fileInputRef.current.value = '';
 		} catch (err: unknown) {
 			let errorMsg = 'Terjadi kesalahan';
@@ -110,8 +143,15 @@ const Payment = () => {
 									</div>
 								</div>
 
-								<Button type="submit" className="w-full" disabled={loading}>
-									{loading ? 'Uploading...' : 'Submit Payment Proof'}
+								{hasPendingPayment && (
+									<div className="text-yellow-600 text-sm mb-2">
+										Anda sudah mengirim bukti pembayaran, silakan tunggu verifikasi admin sebelum
+										mengirim lagi.
+									</div>
+								)}
+
+								<Button type="submit" className="w-full" disabled={loading || hasPendingPayment}>
+									{loading ? 'Waiting...' : 'Submit Payment Proof'}
 								</Button>
 							</form>
 						</CardContent>
