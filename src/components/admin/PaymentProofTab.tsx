@@ -17,7 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { CheckCircle2, XCircle, Eye, Search, Filter } from 'lucide-react';
 
 type PaymentProof = {
@@ -28,6 +28,7 @@ type PaymentProof = {
 	amount: number;
 	status: PaymentStatus;
 	proofUrl: string;
+	notes?: string;
 };
 
 type PaymentStatus = 'pending' | 'approved' | 'rejected';
@@ -41,6 +42,7 @@ const PaymentProofTab = ({ payments, onStatusChange }: PaymentProofTabProps) => 
 	const [searchTerm, setSearchTerm] = useState('');
 	const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
 	const [selectedProof, setSelectedProof] = useState<string | null>(null);
+	const [selectedPayment, setSelectedPayment] = useState<PaymentProof | null>(null);
 
 	const getPaymentStatusColor = (status: PaymentStatus) => {
 		switch (status) {
@@ -131,7 +133,10 @@ const PaymentProofTab = ({ payments, onStatusChange }: PaymentProofTabProps) => 
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={() => setSelectedProof(payment.proofUrl)}
+											onClick={() => {
+												setSelectedProof(payment.proofUrl);
+												setSelectedPayment(payment);
+											}}
 										>
 											<Eye className="h-4 w-4" />
 										</Button>
@@ -157,15 +162,36 @@ const PaymentProofTab = ({ payments, onStatusChange }: PaymentProofTabProps) => 
 				</Table>
 			</div>
 
-			<Dialog open={!!selectedProof} onOpenChange={() => setSelectedProof(null)}>
+			<Dialog
+				open={!!selectedProof}
+				onOpenChange={() => {
+					setSelectedProof(null);
+					setSelectedPayment(null);
+				}}
+			>
 				<DialogContent className="max-w-3xl">
-					<div className="w-full">
-						<img
-							src={selectedProof || ''}
-							alt="Payment Proof"
-							className="w-full object-contain max-h-[70vh]"
-						/>
-					</div>
+					<DialogTitle>
+						Bukti Pembayaran
+						<div className="w-full">
+							<img
+								src={selectedProof || ''}
+								alt="Payment Proof"
+								className="w-full object-contain max-h-[70vh]"
+							/>
+							{selectedPayment && (
+								<div className="mt-4 p-3 rounded bg-gray-50 border text-sm text-gray-700">
+									<div className="font-semibold mb-1">Catatan Admin:</div>
+									<div>
+										{selectedPayment.notes ? (
+											selectedPayment.notes
+										) : (
+											<span className="italic text-gray-400">(Tidak ada catatan)</span>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
+					</DialogTitle>
 				</DialogContent>
 			</Dialog>
 		</div>

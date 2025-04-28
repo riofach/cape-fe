@@ -355,9 +355,9 @@ const Dashboard = () => {
 								<CardTitle>Recent Transactions</CardTitle>
 								<CardDescription>Your latest expenses</CardDescription>
 							</div>
-							<Button variant="ghost" size="sm" className="text-primary">
+							{/* <Button variant="ghost" size="sm" className="text-primary">
 								View All <ArrowUpRight className="ml-1 h-4 w-4" />
-							</Button>
+							</Button> */}
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
