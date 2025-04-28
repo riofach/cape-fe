@@ -39,7 +39,6 @@ const Payment = () => {
 				},
 				body: formData,
 			});
-			if (!res.ok) throw new Error(res.message || 'Gagal upload bukti pembayaran');
 			toast({
 				title: 'Bukti pembayaran berhasil dikirim',
 				description: 'Kami akan review pembayaran Anda dan upgrade akun jika valid.',
