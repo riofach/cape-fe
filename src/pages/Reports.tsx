@@ -41,22 +41,6 @@ import {
 import { apiFetch } from '@/lib/api';
 import type { TooltipProps } from 'recharts';
 
-// Mock monthly expense data
-const monthlyData = [
-	{ month: 'Jan', amount: 18_000_000, budget: 22_500_000 },
-	{ month: 'Feb', amount: 14_700_000, budget: 22_500_000 },
-	{ month: 'Mar', amount: 16_000_000, budget: 22_500_000 },
-	{ month: 'Apr', amount: 14_580_000, budget: 22_500_000 },
-	{ month: 'May', amount: 11_000_000, budget: 22_500_000 },
-	{ month: 'Jun', amount: 12_500_000, budget: 22_500_000 },
-	{ month: 'Jul', amount: 14_200_000, budget: 22_500_000 },
-	{ month: 'Aug', amount: 13_500_000, budget: 22_500_000 },
-	{ month: 'Sep', amount: 11_900_000, budget: 22_500_000 },
-	{ month: 'Oct', amount: 15_500_000, budget: 22_500_000 },
-	{ month: 'Nov', amount: 16_700_000, budget: 22_500_000 },
-	{ month: 'Dec', amount: 19_500_000, budget: 22_500_000 },
-];
-
 // Category data
 const categoryData = [
 	{ name: 'Makanan', value: 63_000_000, color: '#0088FE' },
