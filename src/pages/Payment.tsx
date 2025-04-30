@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { apiFetch } from '@/lib/api';
+import { useNavigate } from 'react-router-dom';
 
 const Payment = () => {
 	const [file, setFile] = useState<File | null>(null);
@@ -15,6 +16,10 @@ const Payment = () => {
 	const [hasPendingPayment, setHasPendingPayment] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
+	const [fileError, setFileError] = useState<string | null>(null);
+	const [userRole, setUserRole] = useState<string | null>(null);
+	const [loadingUserRole, setLoadingUserRole] = useState(true);
+	const navigate = useNavigate();
 
 	const fetchPendingPayment = async () => {
 		try {
@@ -44,6 +49,24 @@ const Payment = () => {
 			if (pollingRef.current) clearInterval(pollingRef.current);
 			document.removeEventListener('visibilitychange', handleVisibility);
 		};
+	}, []);
+
+	useEffect(() => {
+		const fetchUserRole = async () => {
+			try {
+				const token = sessionStorage.getItem('token');
+				const res = await apiFetch('/api/auth/profile', {
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				if (res && res.data && res.data.role) setUserRole(res.data.role.toLowerCase());
+				else setUserRole('free');
+			} catch {
+				setUserRole('free');
+			} finally {
+				setLoadingUserRole(false);
+			}
+		};
+		fetchUserRole();
 	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -133,15 +156,35 @@ const Payment = () => {
 											id="proof"
 											type="file"
 											accept="image/*"
-											onChange={(e) => setFile(e.target.files?.[0] || null)}
+											onChange={(e) => {
+												const file = e.target.files?.[0] || null;
+												if (file) {
+													if (file.size > 1024 * 1024) {
+														// 1MB
+														setFileError('Ukuran file maksimal 1MB. Silakan pilih gambar lain.');
+														setFile(null);
+														return;
+													} else {
+														setFileError(null);
+													}
+												}
+												setFile(file);
+											}}
 											className="mt-1"
 											ref={fileInputRef}
 										/>
+										{fileError && <p className="text-sm text-red-500 mt-1">{fileError}</p>}
 										<p className="text-sm text-gray-500 mt-1">
 											Please upload a screenshot or photo of your payment receipt
 										</p>
 									</div>
 								</div>
+
+								{userRole === 'pro' && !loadingUserRole && (
+									<div className="text-green-600 text-sm mb-2 font-semibold">
+										Anda sudah berlangganan plan Pro. Tidak perlu mengirim bukti pembayaran lagi.
+									</div>
+								)}
 
 								{hasPendingPayment && (
 									<div className="text-yellow-600 text-sm mb-2">
@@ -150,9 +193,15 @@ const Payment = () => {
 									</div>
 								)}
 
-								<Button type="submit" className="w-full" disabled={loading || hasPendingPayment}>
-									{loading ? 'Waiting...' : 'Submit Payment Proof'}
-								</Button>
+								{(userRole === 'free' || userRole === 'admin') && (
+									<Button
+										type="submit"
+										className="w-full"
+										disabled={loading || hasPendingPayment || userRole === 'admin'}
+									>
+										{loading ? 'Waiting...' : 'Submit Payment Proof'}
+									</Button>
+								)}
 							</form>
 						</CardContent>
 					</Card>
