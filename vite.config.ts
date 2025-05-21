@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
 			// untuk development:
 			// '/api': 'http://localhost:5000',
 			// untuk production:
-			'/api': 'https://cape-be.up.railway.app',
+			'/api': process.env.VITE_API_URL,
 		},
 	},
 	plugins: [react(), mode === 'development' && componentTagger()].filter(Boolean),
