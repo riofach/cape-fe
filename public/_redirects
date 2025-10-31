@@ -1,1 +1,3 @@
-/*    /index.html   200
+/    https://cape.web.id    301!
+*.cape.rioraditya.my.id/*  https://cape.web.id/:splat 301!
+*.cape.rioraditya.click/*  https://cape.web.id/:splat 301!
